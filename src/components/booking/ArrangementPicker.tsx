@@ -77,7 +77,7 @@ export default function ArrangementPicker({
       type: "arrangement",
       arrangement: JSON.stringify(arrangement),
       personen: String(guests),
-      stap: "3", // Skip upgrades for arrangements, go straight to gegevens
+      stap: "4", // Skip reisgezelschap + upgrades, go straight to gegevens
     });
     router.push(`/boeken?${params.toString()}`);
   }
