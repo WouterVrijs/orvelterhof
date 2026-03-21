@@ -1,4 +1,4 @@
-import type { PricingData } from "./types";
+import type { PricingData, CostItem } from "./types";
 import { isApiConfigured } from "@/lib/api/bookingApiClient";
 import { bookingConfig } from "@/components/booking/bookingConfig";
 
@@ -29,7 +29,13 @@ export async function fetchPricing(): Promise<PricingData> {
       return getDefaultPricing();
     }
 
-    return (await res.json()) as PricingData;
+    const data = (await res.json()) as PricingData;
+
+    // Deduplicate cost items by name (API may return duplicates)
+    data.mandatoryCosts = deduplicateByName(data.mandatoryCosts);
+    data.upgrades = deduplicateByName(data.upgrades);
+
+    return data;
   } catch (error) {
     console.warn("[pricing] Could not fetch pricing, using defaults.", error);
     return getDefaultPricing();
@@ -60,4 +66,16 @@ function getDefaultPricing(): PricingData {
       { id: "ontbijt", name: "Ontbijt", type: "PER_PERSON_PER_NIGHT", price: 0.00 },
     ],
   };
+}
+
+/**
+ * Remove duplicate cost items by name, keeping the first occurrence.
+ */
+function deduplicateByName(items: CostItem[]): CostItem[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.name)) return false;
+    seen.add(item.name);
+    return true;
+  });
 }
