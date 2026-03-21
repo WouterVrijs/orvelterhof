@@ -231,6 +231,7 @@ export default function BookingCalendarWrapper({
         initialArrangementId={arrangement?.arrangementId}
         initialDate={arrangement?.date}
         initialGuests={arrangement?.guests ?? guestCount}
+        availabilityData={data}
       />
     );
   }

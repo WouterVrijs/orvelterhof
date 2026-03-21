@@ -7,13 +7,17 @@ import type { ArrangementOption, SelectedArrangement, BookingType } from "./book
 import { ARRANGEMENTS } from "./arrangementsConfig";
 import BookingTypeSelector from "./BookingTypeSelector";
 import BookingStepIndicator from "./BookingStepIndicator";
-import { Check, ChevronDown, ChevronUp, Calendar, Users } from "lucide-react";
+import CalendarMonth from "./CalendarMonth";
+import { todayISO } from "./dateUtils";
+import type { DayStatus, DayRenderStatus } from "./types";
+import { Check, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Calendar, Users } from "lucide-react";
 
 interface ArrangementPickerProps {
   onTypeChange: (type: BookingType) => void;
   initialArrangementId?: string | null;
   initialDate?: string | null;
   initialGuests?: number;
+  availabilityData?: DayStatus[];
 }
 
 function ClockIcon() {
@@ -39,6 +43,7 @@ export default function ArrangementPicker({
   initialArrangementId,
   initialDate,
   initialGuests = 10,
+  availabilityData = [],
 }: ArrangementPickerProps) {
   const router = useRouter();
   const t = useTranslations("bookingModule");
@@ -47,6 +52,52 @@ export default function ArrangementPicker({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [date, setDate] = useState(initialDate ?? "");
   const [guests, setGuests] = useState(initialGuests);
+
+  // Calendar month navigation
+  const now = new Date();
+  const [calMonth, setCalMonth] = useState(now.getMonth());
+  const [calYear, setCalYear] = useState(now.getFullYear());
+
+  const canGoBack = calYear > now.getFullYear() || (calYear === now.getFullYear() && calMonth > now.getMonth());
+
+  function prevMonth() {
+    if (!canGoBack) return;
+    if (calMonth === 0) { setCalMonth(11); setCalYear(calYear - 1); }
+    else setCalMonth(calMonth - 1);
+  }
+  function nextMonth() {
+    if (calMonth === 11) { setCalMonth(0); setCalYear(calYear + 1); }
+    else setCalMonth(calMonth + 1);
+  }
+
+  // Build status map from availability data
+  const today = todayISO();
+  const statusMap = useMemo(
+    () => new Map(availabilityData.map((d) => [d.date, d])),
+    [availabilityData],
+  );
+
+  // Day render status for CalendarMonth
+  function getDayRenderStatus(dateStr: string): DayRenderStatus {
+    if (dateStr <= today) return "past";
+    const info = statusMap.get(dateStr);
+    if (!info) return "available";
+    if (info.status === "booked") return "occupied";
+    if (info.status === "discount") return "discount";
+    return "available";
+  }
+
+  function isDateSelectable(dateStr: string): boolean {
+    if (dateStr <= today) return false;
+    const info = statusMap.get(dateStr);
+    if (info?.status === "booked") return false;
+    return true;
+  }
+
+  function isRangeStart(dateStr: string): boolean { return dateStr === date; }
+  function isRangeEnd(dateStr: string): boolean { return dateStr === date; }
+  function isInRange(): boolean { return false; }
+  function handleDateClick(dateStr: string) { setDate(dateStr); }
 
   const selected = useMemo(
     () => ARRANGEMENTS.find((a) => a.id === selectedId) ?? null,
@@ -77,15 +128,10 @@ export default function ArrangementPicker({
       type: "arrangement",
       arrangement: JSON.stringify(arrangement),
       personen: String(guests),
-      stap: "4", // Skip reisgezelschap + upgrades, go straight to gegevens
+      stap: "4",
     });
     router.push(`/boeken?${params.toString()}`);
   }
-
-  // Min date = tomorrow
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().slice(0, 10);
 
   return (
     <>
@@ -158,22 +204,45 @@ export default function ArrangementPicker({
               </div>
             )}
 
-            {/* Date picker */}
+            {/* Date picker — calendar */}
             <div className="mb-4">
-              <label
-                htmlFor="arrangement-date"
-                className="mb-1.5 flex items-center gap-1.5 font-[family-name:var(--font-lato)] text-[0.6875rem] font-bold uppercase tracking-wider text-text-muted"
-              >
+              <p className="mb-1.5 flex items-center gap-1.5 font-[family-name:var(--font-lato)] text-[0.6875rem] font-bold uppercase tracking-wider text-text-muted">
                 <Calendar size={12} />
                 {t("dateLabel")}
-              </label>
-              <input
-                id="arrangement-date"
-                type="date"
-                value={date}
-                min={minDate}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-xl border border-cream-dark bg-cream px-4 py-2.5 font-[family-name:var(--font-lato)] text-sm text-olive-dark outline-none transition-colors focus:border-olive focus:ring-1 focus:ring-olive"
+              </p>
+
+              {date && (
+                <p className="mb-2 rounded-lg bg-olive/10 px-3 py-1.5 text-center font-[family-name:var(--font-lato)] text-sm font-medium text-olive-dark">
+                  {new Date(date + "T12:00:00").toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "long", year: "numeric" })}
+                </p>
+              )}
+
+              {/* Month navigation */}
+              <div className="mb-2 flex items-center justify-between">
+                <button type="button" onClick={prevMonth} disabled={!canGoBack}
+                  className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${canGoBack ? "text-olive hover:bg-cream" : "text-cream-dark"}`}>
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="font-[family-name:var(--font-playfair)] text-sm text-olive-dark">
+                  {new Date(calYear, calMonth).toLocaleDateString("nl-NL", { month: "long", year: "numeric" })}
+                </span>
+                <button type="button" onClick={nextMonth}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-olive transition-colors hover:bg-cream">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+
+              <CalendarMonth
+                year={calYear}
+                month={calMonth}
+                statusMap={statusMap}
+                getDayRenderStatus={getDayRenderStatus}
+                isDateSelectable={isDateSelectable}
+                isInRange={isInRange}
+                isRangeStart={isRangeStart}
+                isRangeEnd={isRangeEnd}
+                onDateClick={handleDateClick}
+                onDateHover={() => {}}
               />
             </div>
 
