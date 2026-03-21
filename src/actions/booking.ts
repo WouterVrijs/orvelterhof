@@ -21,6 +21,7 @@ export async function submitBooking(
     arrivalDate: String(formData.get("arrivalDate") ?? ""),
     departureDate: String(formData.get("departureDate") ?? ""),
     numberOfGuests: Number(formData.get("numberOfGuests") || 2),
+    totalPrice: Number(formData.get("totalPrice") || 0),
     guestNote: String(formData.get("guestNote") ?? "") || undefined,
   };
 

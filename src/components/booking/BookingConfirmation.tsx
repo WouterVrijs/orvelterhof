@@ -338,6 +338,7 @@ export default function BookingConfirmation({
             <input type="hidden" name="departureDate" value={isArrangement ? arrangementDepartureDate : (period?.checkOut ?? "")} />
             <input type="hidden" name="numberOfGuests" value={isArrangement ? (arrangement?.guests ?? 2) : (period?.guests ?? 2)} />
             <input type="hidden" name="guestNote" value={contact.remarks} />
+            <input type="hidden" name="totalPrice" value={isArrangement ? (arrangement?.totalPrice ?? 0) : (period?.grandTotal ?? 0)} />
             {isArrangement && arrangement && (
               <>
                 <input type="hidden" name="arrangementId" value={arrangement.arrangementId} />
