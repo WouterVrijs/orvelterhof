@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import BookingCalendarWrapper from "./BookingCalendarWrapper";
 import PayPalLogo from "@/components/PayPalLogo";
 import { fetchCalendarData } from "@/lib/api/calendarService";
+import { fetchPricing } from "@/lib/pricing/fetchPricing";
 import { addMonths, todayISO } from "@/components/booking/dateUtils";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,6 +25,7 @@ export default async function BoekenPage() {
   const today = todayISO();
   const horizonEnd = addMonths(new Date(), 12);
   const apiCalendarData = await fetchCalendarData(today, horizonEnd);
+  const pricingData = await fetchPricing();
   return (
     <>
       <Header />
@@ -47,7 +49,7 @@ export default async function BoekenPage() {
         <section className="bg-[#fbf8f6] py-16">
           <div className="mx-auto max-w-6xl px-6">
             <Suspense>
-              <BookingCalendarWrapper apiCalendarData={apiCalendarData} />
+              <BookingCalendarWrapper apiCalendarData={apiCalendarData} pricingData={pricingData} />
             </Suspense>
           </div>
         </section>

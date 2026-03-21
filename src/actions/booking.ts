@@ -31,7 +31,7 @@ export async function submitBooking(
     body.arrangementName = formData.get("arrangementName");
   }
 
-  const res = await fetch(process.env.BOOKING_API_URL!, {
+  const res = await fetch(`${process.env.BOOKING_API_URL}/bookings`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

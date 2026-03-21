@@ -32,7 +32,7 @@ export async function fetchCalendarData(
   try {
     const params = new URLSearchParams({ from: fromDate, to: toStr });
     const response = await apiFetch<BookingApiBookingsResponse>(
-      `?${params.toString()}`,
+      `/bookings?${params.toString()}`,
     );
 
     return bookingsToDayStatuses(fromDate, toStr, response.bookings);

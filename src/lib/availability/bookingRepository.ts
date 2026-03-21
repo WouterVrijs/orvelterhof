@@ -40,7 +40,7 @@ async function getBookingsFromApi(
   try {
     const params = new URLSearchParams({ from: startDate, to: endDate });
     const response = await apiFetch<BookingApiBookingsResponse>(
-      `?${params.toString()}`,
+      `/bookings?${params.toString()}`,
     );
 
     return response.bookings.map(apiBookingToDomain);

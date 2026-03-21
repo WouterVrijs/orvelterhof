@@ -9,8 +9,9 @@ import BookingConfirmation from "@/components/booking/BookingConfirmation";
 import ArrangementPicker from "@/components/booking/ArrangementPicker";
 import { generateMockData } from "@/components/booking/mockData";
 import { getNightCount } from "@/components/booking/dateUtils";
-import { bookingConfig } from "@/components/booking/bookingConfig";
 import type { DayStatus } from "@/components/booking/types";
+import type { PricingData } from "@/lib/pricing/types";
+import { calculateCostItemTotal } from "@/lib/pricing/types";
 import type {
   BookingType,
   BookingPeriod,
@@ -25,6 +26,7 @@ const CONTACT_STORAGE_KEY = "orvelterhof_booking_contact";
 
 interface BookingCalendarWrapperProps {
   apiCalendarData: DayStatus[] | null;
+  pricingData: PricingData;
 }
 
 /**
@@ -36,6 +38,7 @@ interface BookingCalendarWrapperProps {
  */
 export default function BookingCalendarWrapper({
   apiCalendarData,
+  pricingData,
 }: BookingCalendarWrapperProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -92,6 +95,7 @@ export default function BookingCalendarWrapper({
     const totalNights = getNightCount(aankomst, vertrek);
     if (totalNights <= 0) return null;
 
+    // Calculate accommodation price from calendar data or API base price
     const statusMap = new Map(data.map((d) => [d.date, d]));
     let totalPrice = 0;
     const current = new Date(aankomst);
@@ -102,15 +106,25 @@ export default function BookingCalendarWrapper({
       const day = String(current.getDate()).padStart(2, "0");
       const dateStr = `${y}-${m}-${day}`;
       const info = statusMap.get(dateStr);
-      totalPrice += info?.price ?? 75;
+      totalPrice += info?.price ?? pricingData.basePrice.perNight;
       current.setDate(current.getDate() + 1);
     }
 
-    const cleaning = bookingConfig.cleaningFee;
-    const linen = Math.round(bookingConfig.linenPerPerson * guestCount * 100) / 100;
-    const energy = Math.round(bookingConfig.energyPerPersonPerNight * guestCount * totalNights * 100) / 100;
-    const tax = Math.round(bookingConfig.taxPerPersonPerNight * guestCount * totalNights * 100) / 100;
-    const additionalSubtotal = Math.round((cleaning + linen + energy + tax) * 100) / 100;
+    // Calculate mandatory costs from pricing API
+    const costMap: Record<string, number> = {};
+    let additionalSubtotal = 0;
+    for (const cost of pricingData.mandatoryCosts) {
+      const amount = calculateCostItemTotal(cost, guestCount, totalNights);
+      costMap[cost.id || cost.name] = amount;
+      additionalSubtotal += amount;
+    }
+    additionalSubtotal = Math.round(additionalSubtotal * 100) / 100;
+
+    // Map to legacy additionalCosts shape for backward compatibility
+    const cleaning = costMap["cleaning"] ?? costMap["Eindschoonmaak"] ?? 0;
+    const linen = costMap["linen"] ?? costMap["Bedlinnen"] ?? 0;
+    const energy = costMap["energy"] ?? costMap["Energie"] ?? 0;
+    const tax = costMap["tax"] ?? costMap["Gem. heffingen"] ?? 0;
 
     return {
       checkIn: aankomst,
@@ -122,7 +136,7 @@ export default function BookingCalendarWrapper({
       additionalCosts: { cleaning, linen, energy, tax, subtotal: additionalSubtotal },
       grandTotal: Math.round((totalPrice + additionalSubtotal) * 100) / 100,
     };
-  }, [aankomst, vertrek, guestCount, data, bookingType]);
+  }, [aankomst, vertrek, guestCount, data, bookingType, pricingData]);
 
   // ── Upgrades ────────────────────────────────────────────────
   const upgrades: BookingUpgradesType = useMemo(() => {
