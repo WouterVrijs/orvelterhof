@@ -44,6 +44,14 @@ export default function BookingConfirmation({
   const t = useTranslations("bookingModule");
   const isArrangement = bookingType === "arrangement";
 
+  // For arrangements, departureDate must be after arrivalDate for API validation
+  const arrangementDepartureDate = (() => {
+    if (!arrangement?.date) return "";
+    const d = new Date(arrangement.date);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  })();
+
   // ── Availability re-check on mount (verblijf only) ────────
   const [availCheck, setAvailCheck] = useState<
     "checking" | "available" | "unavailable" | "error"
@@ -322,8 +330,12 @@ export default function BookingConfirmation({
             <input type="hidden" name="lastName" value={contact.lastName} />
             <input type="hidden" name="email" value={contact.email} />
             <input type="hidden" name="phone" value={contact.phone} />
+            <input type="hidden" name="organisation" value={contact.organisation} />
+            <input type="hidden" name="street" value={contact.street} />
+            <input type="hidden" name="postalCode" value={contact.postalCode} />
+            <input type="hidden" name="city" value={contact.city} />
             <input type="hidden" name="arrivalDate" value={isArrangement ? (arrangement?.date ?? "") : (period?.checkIn ?? "")} />
-            <input type="hidden" name="departureDate" value={isArrangement ? (arrangement?.date ?? "") : (period?.checkOut ?? "")} />
+            <input type="hidden" name="departureDate" value={isArrangement ? arrangementDepartureDate : (period?.checkOut ?? "")} />
             <input type="hidden" name="numberOfGuests" value={isArrangement ? (arrangement?.guests ?? 2) : (period?.guests ?? 2)} />
             <input type="hidden" name="guestNote" value={contact.remarks} />
             {isArrangement && arrangement && (

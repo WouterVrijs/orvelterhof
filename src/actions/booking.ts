@@ -14,15 +14,14 @@ export async function submitBooking(
   const bookingType = formData.get("bookingType") || "verblijf";
 
   const body: Record<string, unknown> = {
-    bookingType,
-    firstName: formData.get("firstName"),
-    lastName: formData.get("lastName"),
-    email: formData.get("email"),
-    phone: formData.get("phone") || undefined,
-    arrivalDate: formData.get("arrivalDate"),
-    departureDate: formData.get("departureDate"),
-    numberOfGuests: Number(formData.get("numberOfGuests")),
-    guestNote: formData.get("guestNote") || undefined,
+    firstName: String(formData.get("firstName") ?? ""),
+    lastName: String(formData.get("lastName") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    arrivalDate: String(formData.get("arrivalDate") ?? ""),
+    departureDate: String(formData.get("departureDate") ?? ""),
+    numberOfGuests: Number(formData.get("numberOfGuests") || 2),
+    guestNote: String(formData.get("guestNote") ?? "") || undefined,
   };
 
   // Add arrangement-specific fields
@@ -43,7 +42,11 @@ export async function submitBooking(
   const data = await res.json();
 
   if (!res.ok) {
-    return { success: false, error: data.error, details: data.details };
+    return {
+      success: false,
+      error: data.error || `HTTP ${res.status}`,
+      details: typeof data.details === "object" ? JSON.stringify(data.details) : data.details,
+    };
   }
 
   return { success: true, reservationNumber: data.reservationNumber };
