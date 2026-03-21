@@ -6,16 +6,12 @@ import type { BookingFlowStep } from "./bookingFlowTypes";
 
 interface BookingStepIndicatorProps {
   currentStep: BookingFlowStep;
+  onStepClick?: (step: BookingFlowStep) => void;
 }
 
-/**
- * Visual step indicator for the booking flow.
- *
- * Shows where the user is in the funnel. Completed steps show a
- * checkmark, the active step is highlighted, and future steps are muted.
- */
 export default function BookingStepIndicator({
   currentStep,
+  onStepClick,
 }: BookingStepIndicatorProps) {
   const t = useTranslations("bookingModule");
 
@@ -34,41 +30,53 @@ export default function BookingStepIndicator({
           const isCompleted = step < currentStep;
           const isActive = step === currentStep;
           const isLast = index === STEPS.length - 1;
+          const isClickable = isCompleted && onStepClick;
+
+          const circleClass = `flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-[family-name:var(--font-lato)] text-xs font-bold transition-colors md:h-8 md:w-8 md:text-sm ${
+            isCompleted
+              ? "bg-[#5a9a5a] text-white"
+              : isActive
+                ? "bg-olive text-white"
+                : "bg-cream-dark/60 text-olive-light/60"
+          } ${isClickable ? "cursor-pointer hover:bg-[#4a8a4a]" : ""}`;
+
+          const labelClass = `hidden font-[family-name:var(--font-lato)] text-sm font-medium sm:inline ${
+            isCompleted
+              ? "text-[#5a9a5a]"
+              : isActive
+                ? "text-olive-dark"
+                : "text-olive-light/60"
+          } ${isClickable ? "cursor-pointer hover:text-[#4a8a4a]" : ""}`;
+
+          const stepContent = (
+            <>
+              <span className={circleClass} aria-current={isActive ? "step" : undefined}>
+                {isCompleted ? (
+                  <Check size={14} strokeWidth={2.5} aria-hidden="true" />
+                ) : (
+                  step
+                )}
+              </span>
+              <span className={labelClass}>{label}</span>
+            </>
+          );
 
           return (
             <li key={step} className="flex items-center">
-              {/* Step circle + label */}
-              <div className="flex items-center gap-1.5 md:gap-2.5">
-                <span
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-[family-name:var(--font-lato)] text-xs font-bold transition-colors md:h-8 md:w-8 md:text-sm ${
-                    isCompleted
-                      ? "bg-[#5a9a5a] text-white"
-                      : isActive
-                        ? "bg-olive text-white"
-                        : "bg-cream-dark/60 text-olive-light/60"
-                  }`}
-                  aria-current={isActive ? "step" : undefined}
+              {isClickable ? (
+                <button
+                  type="button"
+                  onClick={() => onStepClick(step)}
+                  className="flex items-center gap-1.5 md:gap-2.5"
                 >
-                  {isCompleted ? (
-                    <Check size={14} strokeWidth={2.5} aria-hidden="true" />
-                  ) : (
-                    step
-                  )}
-                </span>
-                <span
-                  className={`hidden font-[family-name:var(--font-lato)] text-sm font-medium sm:inline ${
-                    isCompleted
-                      ? "text-[#5a9a5a]"
-                      : isActive
-                        ? "text-olive-dark"
-                        : "text-olive-light/60"
-                  }`}
-                >
-                  {label}
-                </span>
-              </div>
+                  {stepContent}
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 md:gap-2.5">
+                  {stepContent}
+                </div>
+              )}
 
-              {/* Connector line */}
               {!isLast && (
                 <div
                   className={`mx-2 h-px w-6 sm:mx-3 sm:w-10 md:mx-4 md:w-14 ${

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import type { BookingPeriod, TravelParty } from "./bookingFlowTypes";
+import type { BookingPeriod, TravelParty, BookingFlowStep } from "./bookingFlowTypes";
 import BookingFlowSummary from "./BookingFlowSummary";
 import BookingStepIndicator from "./BookingStepIndicator";
 import { Users } from "lucide-react";
@@ -27,13 +27,18 @@ export default function TravelPartyStep({
   const total = adults + children + babies;
   const isValid = total === period.guests;
 
-  function goBack() {
+  function goToStep(step: BookingFlowStep) {
     const params = new URLSearchParams({
       aankomst: period.checkIn,
       vertrek: period.checkOut,
       personen: String(period.guests),
     });
+    if (step > 1) params.set("stap", String(step));
     router.push(`/boeken?${params.toString()}`);
+  }
+
+  function goBack() {
+    goToStep(1);
   }
 
   function goForward() {
@@ -52,7 +57,7 @@ export default function TravelPartyStep({
 
   return (
     <>
-      <BookingStepIndicator currentStep={2} />
+      <BookingStepIndicator currentStep={2} onStepClick={goToStep} />
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         {/* Content */}

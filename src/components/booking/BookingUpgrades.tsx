@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import type { BookingPeriod, BookingUpgrades as BookingUpgradesType, UpgradeOption, UpgradeLineItem } from "./bookingFlowTypes";
+import type { BookingPeriod, BookingUpgrades as BookingUpgradesType, UpgradeOption, UpgradeLineItem, BookingFlowStep } from "./bookingFlowTypes";
 import { EMPTY_UPGRADES } from "./bookingFlowTypes";
 import { confirmAvailabilityAction } from "@/lib/availability/actions";
 import BookingFlowSummary from "./BookingFlowSummary";
@@ -97,13 +97,18 @@ export default function BookingUpgrades({
   }, [period.checkIn, period.checkOut]);
 
   // ── Navigation ────────────────────────────────────────────────
-  function goBack() {
+  function goToStep(step: BookingFlowStep) {
     const params = new URLSearchParams({
       aankomst: period.checkIn,
       vertrek: period.checkOut,
       personen: String(period.guests),
     });
+    if (step > 1) params.set("stap", String(step));
     router.push(`/boeken?${params.toString()}`);
+  }
+
+  function goBack() {
+    goToStep(1);
   }
 
   function goForward() {
@@ -129,7 +134,7 @@ export default function BookingUpgrades({
   if (availCheck === "unavailable") {
     return (
       <>
-        <BookingStepIndicator currentStep={3} />
+        <BookingStepIndicator currentStep={3} onStepClick={goToStep} />
         <div className="mx-auto max-w-xl text-center">
           <div className="mb-6 flex justify-center">
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
@@ -158,7 +163,7 @@ export default function BookingUpgrades({
 
   return (
     <>
-      <BookingStepIndicator currentStep={3} />
+      <BookingStepIndicator currentStep={3} onStepClick={goToStep} />
 
       {/* Loading state */}
       {isLoading && (

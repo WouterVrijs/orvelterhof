@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import type {
   BookingType,
   BookingPeriod,
+  BookingFlowStep,
   SelectedArrangement,
   ContactDetails,
   ContactErrors,
@@ -189,24 +190,35 @@ export default function BookingDetails({
     }
   }
 
-  function goToStep1() {
+  function goToStep(step: BookingFlowStep) {
     if (isArrangement) {
-      router.push("/boeken?type=arrangement");
+      const params = new URLSearchParams({ type: "arrangement" });
+      if (arrangement) {
+        params.set("arrangement", JSON.stringify(arrangement));
+        params.set("personen", String(arrangement.guests));
+      }
+      if (step > 1) params.set("stap", String(step));
+      router.push(`/boeken?${params.toString()}`);
     } else if (period) {
       const params = new URLSearchParams({
         aankomst: period.checkIn,
         vertrek: period.checkOut,
         personen: String(period.guests),
       });
+      if (step > 1) params.set("stap", String(step));
       router.push(`/boeken?${params.toString()}`);
     }
+  }
+
+  function goToStep1() {
+    goToStep(1);
   }
 
   // ── Unavailable at mount ────────────────────────────────────
   if (availCheck === "unavailable") {
     return (
       <>
-        <BookingStepIndicator currentStep={4} />
+        <BookingStepIndicator currentStep={4} onStepClick={goToStep} />
         <div className="mx-auto max-w-xl text-center">
           <div className="mb-6 flex justify-center">
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
@@ -237,7 +249,7 @@ export default function BookingDetails({
 
   return (
     <>
-      <BookingStepIndicator currentStep={4} />
+      <BookingStepIndicator currentStep={4} onStepClick={goToStep} />
 
       {isLoading && (
         <div className="mb-8 flex items-center justify-center gap-3 rounded-xl border border-terracotta/30 bg-terracotta/5 px-4 py-4">
