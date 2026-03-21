@@ -1,6 +1,6 @@
 "use client";
 
-import type { BookingPeriod } from "./bookingFlowTypes";
+import type { BookingPeriod, UpgradeLineItem } from "./bookingFlowTypes";
 import { formatDisplayDate } from "./dateUtils";
 import { useTranslations } from "next-intl";
 import { CalendarDays, Users, Moon } from "lucide-react";
@@ -8,21 +8,29 @@ import { CalendarDays, Users, Moon } from "lucide-react";
 interface BookingFlowSummaryProps {
   period: BookingPeriod;
   onEditPeriod: () => void;
+  upgradeItems?: UpgradeLineItem[];
 }
 
-/**
- * Read-only booking summary shown in step 2.
- *
- * Displays the confirmed period from step 1 with an option to go back
- * and edit. Gives the user confidence that their selection is locked in
- * while they fill in contact details.
- */
 export default function BookingFlowSummary({
   period,
   onEditPeriod,
+  upgradeItems,
 }: BookingFlowSummaryProps) {
   const t = useTranslations("bookingModule");
   const nightLabel = period.totalNights === 1 ? t("nightSingular") : t("nightPlural", { count: period.totalNights });
+
+  const upgradesTotal = upgradeItems?.reduce((sum, item) => sum + item.amount, 0) ?? 0;
+  const displayTotal = Math.round((period.grandTotal + upgradesTotal) * 100) / 100;
+
+  // Use items array if available, otherwise fall back to legacy fields
+  const costItems = period.additionalCosts.items?.length
+    ? period.additionalCosts.items
+    : [
+        { id: "cleaning", name: t("finalCleaning"), amount: period.additionalCosts.cleaning },
+        { id: "linen", name: t("bedLinen", { guests: period.guests }), amount: period.additionalCosts.linen },
+        { id: "energy", name: t("energy"), amount: period.additionalCosts.energy },
+        { id: "tax", name: t("avgTaxes"), amount: period.additionalCosts.tax },
+      ].filter((item) => item.amount > 0);
 
   return (
     <div className="rounded-2xl border border-cream-dark bg-white p-6 shadow-sm">
@@ -80,34 +88,44 @@ export default function BookingFlowSummary({
 
       {/* Price breakdown */}
       <div className="space-y-2 border-t border-cream-dark pt-4">
+        {/* Accommodation */}
         <div className="flex items-baseline justify-between font-[family-name:var(--font-lato)] text-sm text-text-muted">
           <span>
             {t("stayPriceLabel", { pricePerNight: period.avgPricePerNight, nights: nightLabel })}
           </span>
           <span>&euro;{period.totalPrice.toLocaleString("nl-NL")}</span>
         </div>
-        <div className="flex items-baseline justify-between font-[family-name:var(--font-lato)] text-sm text-text-muted">
-          <span>{t("finalCleaning")}</span>
-          <span>&euro;{period.additionalCosts.cleaning.toLocaleString("nl-NL", { minimumFractionDigits: 2 })}</span>
-        </div>
-        <div className="flex items-baseline justify-between font-[family-name:var(--font-lato)] text-sm text-text-muted">
-          <span>{t("bedLinen", { guests: period.guests })}</span>
-          <span>&euro;{period.additionalCosts.linen.toLocaleString("nl-NL", { minimumFractionDigits: 2 })}</span>
-        </div>
-        <div className="flex items-baseline justify-between font-[family-name:var(--font-lato)] text-sm text-text-muted">
-          <span>{t("energy")}</span>
-          <span>&euro;{period.additionalCosts.energy.toLocaleString("nl-NL", { minimumFractionDigits: 2 })}</span>
-        </div>
-        <div className="flex items-baseline justify-between font-[family-name:var(--font-lato)] text-sm text-text-muted">
-          <span>{t("avgTaxes")}</span>
-          <span>&euro;{period.additionalCosts.tax.toLocaleString("nl-NL", { minimumFractionDigits: 2 })}</span>
-        </div>
+
+        {/* Mandatory costs — dynamic from API items */}
+        {costItems.map((item) => (
+          <div key={item.id} className="flex items-baseline justify-between font-[family-name:var(--font-lato)] text-sm text-text-muted">
+            <span>{item.name}</span>
+            <span>&euro;{item.amount.toLocaleString("nl-NL", { minimumFractionDigits: 2 })}</span>
+          </div>
+        ))}
+
+        {/* Upgrade items */}
+        {upgradeItems && upgradeItems.length > 0 && (
+          <>
+            {upgradeItems.map((item) => (
+              <div key={item.id} className="flex items-baseline justify-between font-[family-name:var(--font-lato)] text-sm text-terracotta">
+                <span>
+                  {item.name}
+                  {item.quantity > 1 ? ` (${item.quantity}×)` : ""}
+                </span>
+                <span>&euro;{item.amount.toLocaleString("nl-NL", { minimumFractionDigits: 2 })}</span>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* Total */}
         <div className="flex items-baseline justify-between border-t border-cream-dark pt-2">
           <span className="font-[family-name:var(--font-playfair)] text-base text-olive-dark">
             {t("total")}
           </span>
           <span className="font-[family-name:var(--font-playfair)] text-2xl text-olive-dark">
-            &euro;{period.grandTotal.toLocaleString("nl-NL", { minimumFractionDigits: 2 })}
+            &euro;{displayTotal.toLocaleString("nl-NL", { minimumFractionDigits: 2 })}
           </span>
         </div>
       </div>

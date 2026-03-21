@@ -39,6 +39,21 @@ export interface SelectedArrangement {
 
 // ── Step 1 output ───────────────────────────────────────────────
 
+/** Single cost line item from the pricing API. */
+export interface CostLineItem {
+  id: string;
+  name: string;
+  amount: number;
+}
+
+/** Upgrade line item with quantity for display in sidebar. */
+export interface UpgradeLineItem {
+  id: string;
+  name: string;
+  amount: number;
+  quantity: number;
+}
+
 /** Bijkomende kosten berekend op basis van gasten en nachten. */
 export interface AdditionalCosts {
   cleaning: number;
@@ -46,6 +61,7 @@ export interface AdditionalCosts {
   energy: number;
   tax: number;
   subtotal: number;
+  items: CostLineItem[];
 }
 
 /** Confirmed period from step 1 (Verblijf). */

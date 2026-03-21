@@ -111,20 +111,20 @@ export default function BookingCalendarWrapper({
     }
 
     // Calculate mandatory costs from pricing API
-    const costMap: Record<string, number> = {};
+    const items: { id: string; name: string; amount: number }[] = [];
     let additionalSubtotal = 0;
     for (const cost of pricingData.mandatoryCosts) {
       const amount = calculateCostItemTotal(cost, guestCount, totalNights);
-      costMap[cost.id || cost.name] = amount;
+      items.push({ id: cost.id || cost.name, name: cost.name, amount });
       additionalSubtotal += amount;
     }
     additionalSubtotal = Math.round(additionalSubtotal * 100) / 100;
 
-    // Map to legacy additionalCosts shape for backward compatibility
-    const cleaning = costMap["cleaning"] ?? costMap["Eindschoonmaak"] ?? 0;
-    const linen = costMap["linen"] ?? costMap["Bedlinnen"] ?? 0;
-    const energy = costMap["energy"] ?? costMap["Energie"] ?? 0;
-    const tax = costMap["tax"] ?? costMap["Gem. heffingen"] ?? 0;
+    // Legacy fields (backward compat for BookingSummary in step 1)
+    const cleaning = items.find(i => i.id.toLowerCase().includes("clean") || i.name.toLowerCase().includes("schoonmaak"))?.amount ?? 0;
+    const linen = items.find(i => i.id.toLowerCase().includes("linen") || i.name.toLowerCase().includes("linnen") || i.name.toLowerCase().includes("bedlinnen"))?.amount ?? 0;
+    const energy = items.find(i => i.id.toLowerCase().includes("energy") || i.name.toLowerCase().includes("energie"))?.amount ?? 0;
+    const tax = items.find(i => i.id.toLowerCase().includes("tax") || i.name.toLowerCase().includes("heffing") || i.name.toLowerCase().includes("belasting"))?.amount ?? 0;
 
     return {
       checkIn: aankomst,
@@ -133,7 +133,7 @@ export default function BookingCalendarWrapper({
       totalNights,
       totalPrice,
       avgPricePerNight: Math.round(totalPrice / totalNights),
-      additionalCosts: { cleaning, linen, energy, tax, subtotal: additionalSubtotal },
+      additionalCosts: { cleaning, linen, energy, tax, subtotal: additionalSubtotal, items },
       grandTotal: Math.round((totalPrice + additionalSubtotal) * 100) / 100,
     };
   }, [aankomst, vertrek, guestCount, data, bookingType, pricingData]);
@@ -242,7 +242,7 @@ export default function BookingCalendarWrapper({
   }
 
   if (currentStep === 2 && period) {
-    return <BookingUpgrades period={period} initialUpgrades={upgrades} />;
+    return <BookingUpgrades period={period} initialUpgrades={upgrades} pricingData={pricingData} />;
   }
 
   return (

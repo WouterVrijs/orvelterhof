@@ -319,7 +319,13 @@ export function useBookingState(
     const tax =
       Math.round(bookingConfig.taxPerPersonPerNight * guests * totalNights * 100) / 100;
     const subtotal = Math.round((cleaning + linen + energy + tax) * 100) / 100;
-    return { cleaning, linen, energy, tax, subtotal };
+    const items = [
+      { id: "cleaning", name: "Eindschoonmaak", amount: cleaning },
+      { id: "linen", name: "Bedlinnen", amount: linen },
+      { id: "energy", name: "Energie", amount: energy },
+      { id: "tax", name: "Gem. heffingen", amount: tax },
+    ];
+    return { cleaning, linen, energy, tax, subtotal, items };
   }, [totalNights, guests]);
 
   const grandTotal = useMemo(() => {

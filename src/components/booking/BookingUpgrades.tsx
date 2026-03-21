@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import type { BookingPeriod, BookingUpgrades as BookingUpgradesType, UpgradeOption } from "./bookingFlowTypes";
+import type { BookingPeriod, BookingUpgrades as BookingUpgradesType, UpgradeOption, UpgradeLineItem } from "./bookingFlowTypes";
 import { EMPTY_UPGRADES } from "./bookingFlowTypes";
 import { confirmAvailabilityAction } from "@/lib/availability/actions";
 import BookingFlowSummary from "./BookingFlowSummary";
 import BookingStepIndicator from "./BookingStepIndicator";
 import { Loader2, AlertTriangle, Info } from "lucide-react";
+import type { PricingData } from "@/lib/pricing/types";
+import { calculateCostItemTotal } from "@/lib/pricing/types";
 
 interface ExtraConfig {
   id: string;
@@ -31,11 +33,13 @@ const EXTRAS: ExtraConfig[] = [
 interface BookingUpgradesProps {
   period: BookingPeriod;
   initialUpgrades?: BookingUpgradesType;
+  pricingData?: PricingData;
 }
 
 export default function BookingUpgrades({
   period,
   initialUpgrades,
+  pricingData,
 }: BookingUpgradesProps) {
   const router = useRouter();
   const t = useTranslations("bookingModule");
@@ -51,6 +55,21 @@ export default function BookingUpgrades({
       prev.map((e) => (e.id === id ? { ...e, value } : e))
     );
   }, []);
+
+  // ── Compute upgrade line items for sidebar ────────────────────
+  const upgradeItems: UpgradeLineItem[] = useMemo(() => {
+    if (!pricingData) return [];
+    const upgradeMap = new Map(pricingData.upgrades.map((u) => [u.id, u]));
+    return extras
+      .filter((e) => e.value > 0)
+      .map((e) => {
+        const config = upgradeMap.get(e.id);
+        if (!config) return null;
+        const amount = calculateCostItemTotal(config, period.guests, period.totalNights, e.value);
+        return { id: e.id, name: config.name, amount, quantity: e.value };
+      })
+      .filter((item): item is UpgradeLineItem => item !== null);
+  }, [extras, pricingData, period.guests, period.totalNights]);
 
   // ── Availability re-check on mount ────────────────────────────
   const [availCheck, setAvailCheck] = useState<
@@ -254,7 +273,7 @@ export default function BookingUpgrades({
 
         {/* Sidebar */}
         <div className="w-full shrink-0 lg:sticky lg:top-6 lg:w-80">
-          <BookingFlowSummary period={period} onEditPeriod={goBack} />
+          <BookingFlowSummary period={period} onEditPeriod={goBack} upgradeItems={upgradeItems} />
         </div>
       </div>
     </>
