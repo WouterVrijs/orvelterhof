@@ -268,6 +268,33 @@ export default function BookingCalendar({
           <p className="mt-4 text-center font-[family-name:var(--font-lato)] text-xs text-text-muted">
             {calendarHint}
           </p>
+
+          {/* Legend */}
+          <div className="mt-6 border-t border-cream-dark pt-4">
+            <p className="mb-2 font-[family-name:var(--font-lato)] text-[0.6875rem] font-bold uppercase tracking-wider text-olive-light">
+              {t("legend")}
+            </p>
+            <div className="flex flex-wrap gap-x-6 gap-y-1.5 font-[family-name:var(--font-lato)] text-xs text-text-muted">
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded-full border border-olive/30 bg-white" />
+                {t("legendAvailable")}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded-full bg-[#e0ddd7]" />
+                {t("legendOccupied")}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="relative inline-flex h-3 w-3 items-center justify-center rounded-full border border-olive/30 bg-white">
+                  <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-terracotta" />
+                </span>
+                {t("legendDiscount")}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded-full bg-olive" />
+                {t("legendSelected")}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Booking summary sidebar */}

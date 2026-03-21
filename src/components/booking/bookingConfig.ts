@@ -24,6 +24,14 @@ export const bookingConfig = {
   /** Minimum number of guests. */
   minGuests: 2,
 
+  // ── Prijzen per nacht ─────────────────────────────────────
+
+  /** Prijs per nacht op vrijdag en zaterdag. */
+  weekendPricePerNight: 650,
+
+  /** Prijs per nacht op ma-do en zo. */
+  midweekPricePerNight: 625,
+
   // ── Bijkomende kosten ──────────────────────────────────────
 
   /** Eindschoonmaak — vast bedrag per boeking. */
