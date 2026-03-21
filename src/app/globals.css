@@ -1,26 +1,913 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-cream: #f5f0e8;
+  --color-cream-dark: #ede6d8;
+  --color-olive: #5a625f;
+  --color-olive-dark: #4a524f;
+  --color-olive-light: #6b746f;
+  --color-terracotta: #b8704b;
+  --color-terracotta-dark: #a0603d;
+  --color-terracotta-light: #c8835e;
+  --color-warm-white: #faf8f4;
+  --color-warm-brown: #8b6f4e;
+  --color-text-dark: #3a3a35;
+  --color-text-muted: #6b6b63;
+  --font-sans: var(--font-playfair);
+  --font-body: var(--font-lato);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Type scale: base 16px, ratio 1.309 */
+  --font-size-display: 5rem;       /* 80px */
+  --font-size-h1: 3.813rem;        /* 61px */
+  --font-size-h2: 2.938rem;        /* 47px */
+  --font-size-h3: 2.25rem;         /* 36px */
+  --font-size-h4: 1.688rem;        /* 27px */
+  --font-size-h5: 1.313rem;        /* 21px */
+  --font-size-body: 1rem;           /* 16px */
+  --font-size-small: 0.75rem;       /* 12px */
+  --font-size-tiny: 0.563rem;       /* 9px */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-warm-white);
+  color: var(--color-text-dark);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* =============================================
+   Bukazu booking widget – custom theme
+   Orvelter Hof: olive, cream, terracotta
+   Uses .bu-rounded-half for calendar cells
+   ============================================= */
+
+/* --- Root container --- */
+.bukazu-app {
+  font-family: var(--font-lato), sans-serif;
+  color: var(--color-text-dark);
+  line-height: 1.6;
+}
+
+/* --- Navigation arrows (←, ↺, →) --- */
+.bukazu-app .icon.bu-rounded {
+  background-color: var(--color-cream) !important;
+  color: var(--color-olive-dark) !important;
+  border: 1px solid var(--color-cream-dark) !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.bukazu-app .icon.bu-rounded.bu-hover-bright:hover {
+  background-color: var(--color-terracotta) !important;
+  color: #fff !important;
+  border-color: var(--color-terracotta) !important;
+}
+
+/* --- Calendar day cells (bu-rounded-half) --- */
+.bukazu-app .bu-rounded-half {
+  background-color: transparent !important;
+  color: var(--color-text-dark) !important;
+  border-radius: 0.375rem !important;
+  transition: all 0.15s ease !important;
+}
+
+/* Available arrival day */
+.bukazu-app .bu-rounded-half.arrival {
+  background-color: var(--color-cream) !important;
+  color: var(--color-olive-dark) !important;
+  cursor: pointer !important;
+}
+
+/* Departure day */
+.bukazu-app .bu-rounded-half.departure {
+  background-color: var(--color-cream) !important;
+  color: var(--color-olive-dark) !important;
+  cursor: pointer !important;
+}
+
+/* Departure + arrival on same day */
+.bukazu-app .bu-rounded-half.departure-arrival {
+  background-color: var(--color-cream) !important;
+  color: var(--color-olive-dark) !important;
+  cursor: pointer !important;
+}
+
+/* Fully booked day */
+.bukazu-app .bu-rounded-half.booked {
+  background-color: var(--color-cream-dark) !important;
+  color: var(--color-text-muted) !important;
+  opacity: 0.5 !important;
+  cursor: default !important;
+}
+
+/* Booked + departure combination */
+.bukazu-app .bu-rounded-half.booked-departure {
+  background-color: var(--color-cream-dark) !important;
+  color: var(--color-text-muted) !important;
+  opacity: 0.5 !important;
+  cursor: default !important;
+}
+
+/* Disabled / past day */
+.bukazu-app .bu-rounded-half.disabled {
+  background-color: transparent !important;
+  color: var(--color-cream-dark) !important;
+  opacity: 0.4 !important;
+  cursor: default !important;
+}
+
+/* Selected day */
+.bukazu-app .bu-rounded-half.selected {
+  background-color: var(--color-terracotta) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+
+/* Discount day */
+.bukazu-app .bu-rounded-half.discount {
+  background-color: var(--color-terracotta-light) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+/* Last minute discount */
+.bukazu-app .bu-rounded-half.last_minute_discount {
+  background-color: var(--color-terracotta-light) !important;
+  color: #fff !important;
+}
+
+/* Hover on available days */
+.bukazu-app .bu-rounded-half.bu-hover-bright:hover {
+  background-color: var(--color-terracotta) !important;
+  color: #fff !important;
+}
+
+/* --- Picker labels --- */
+.bukazu-app .name {
+  font-family: var(--font-playfair), serif !important;
+  color: var(--color-olive-dark) !important;
+}
+
+.bukazu-app .calendar--picker--date .detail {
+  color: var(--color-text-muted) !important;
+  font-family: var(--font-lato), sans-serif !important;
+}
+
+/* --- Primary button (Volgende / Boek nu) --- */
+.bukazu-app .button {
+  background-color: var(--color-terracotta) !important;
+  color: #fff !important;
+  border-radius: 9999px !important;
+  font-family: var(--font-lato), sans-serif !important;
+  font-weight: 700 !important;
+  border: none !important;
+  padding: 0.75rem 2rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 8px rgba(184, 112, 75, 0.25) !important;
+}
+
+.bukazu-app .button:hover {
+  background-color: var(--color-terracotta-dark) !important;
+  box-shadow: 0 4px 12px rgba(184, 112, 75, 0.35) !important;
+}
+
+/* --- Calendar container --- */
+.bukazu-app .calendar-container {
+  background: var(--color-warm-white);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+/* --- Calendar header (month navigation) --- */
+.bukazu-app .calendars-header {
+  color: var(--color-olive-dark);
+  font-family: var(--font-playfair), serif;
+}
+
+.bukazu-app .calendars-header button,
+.bukazu-app .bu-calendar-button {
+  background: transparent;
+  color: var(--color-olive);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bukazu-app .calendars-header button:hover,
+.bukazu-app .bu-calendar-button:hover {
+  background: var(--color-cream);
+  color: var(--color-olive-dark);
+  border-color: var(--color-olive-light);
+}
+
+/* --- Calendar table cells --- */
+.bukazu-app .bu-calendar th {
+  color: var(--color-olive-light) !important;
+  font-weight: 700 !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: 0.5rem 0 !important;
+  background: transparent !important;
+}
+
+.bukazu-app .bu-calendar .cell {
+  border-radius: 0.5rem !important;
+  transition: all 0.15s ease !important;
+  font-size: 0.875rem !important;
+  color: var(--color-text-dark) !important;
+  background: transparent !important;
+}
+
+/* Available days */
+.bukazu-app .bu-calendar .cell.arrival,
+.bukazu-app .bu-calendar .cell.departure,
+.bukazu-app .bu-calendar .cell.departure-arrival {
+  background: var(--color-cream) !important;
+  color: var(--color-olive-dark) !important;
+  cursor: pointer !important;
+}
+
+.bukazu-app .bu-calendar .cell.arrival:hover,
+.bukazu-app .bu-calendar .cell.departure:hover,
+.bukazu-app .bu-calendar .cell.departure-arrival:hover {
+  background: var(--color-terracotta-light) !important;
+  color: #fff !important;
+}
+
+/* Booked / unavailable days – subtle, no colored dots */
+.bukazu-app .bu-calendar .cell.booked,
+.bukazu-app .bu-calendar .cell.booked-departure {
+  background: transparent !important;
+  color: var(--color-text-muted) !important;
+  opacity: 0.35 !important;
+  text-decoration: line-through !important;
+  cursor: default !important;
+}
+
+/* Remove any colored dots/circles on booked days */
+.bukazu-app .bu-calendar .cell.booked::before,
+.bukazu-app .bu-calendar .cell.booked::after,
+.bukazu-app .bu-calendar .cell.booked-departure::before,
+.bukazu-app .bu-calendar .cell.booked-departure::after {
+  display: none !important;
+}
+
+/* Disabled / past days */
+.bukazu-app .bu-calendar .cell.disabled {
+  color: var(--color-cream-dark) !important;
+  background: transparent !important;
+  cursor: default !important;
+}
+
+/* Selected days */
+.bukazu-app .bu-calendar .cell.selected {
+  background: var(--color-terracotta) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  border-radius: 0.5rem !important;
+}
+
+/* Discount days */
+.bukazu-app .bu-calendar .cell.discount {
+  background: var(--color-cream) !important;
+  color: var(--color-terracotta-dark) !important;
+  font-weight: 700 !important;
+}
+
+.bukazu-app .bu-calendar .cell.discount:hover {
+  background: var(--color-terracotta-light) !important;
+  color: #fff !important;
+}
+
+/* --- Override Bukazu inline styles on ALL cell states --- */
+.bukazu-app .bu-calendar td,
+.bukazu-app .bu-calendar td > div,
+.bukazu-app .bu-calendar td > span {
+  border-radius: 0.5rem !important;
+}
+
+/* Remove any colored circles/backgrounds that Bukazu injects */
+.bukazu-app .bu-calendar td[style] {
+  background: none !important;
+}
+
+/* --- Tabs / booking type selector --- */
+.bukazu-app .bu-tabs,
+.bukazu-app .tabs,
+.bukazu-app [class*="tab-"] {
+  font-family: var(--font-lato), sans-serif !important;
+}
+
+.bukazu-app .bu-tabs .bu-tab,
+.bukazu-app .tabs .tab,
+.bukazu-app .bu-tab {
+  background: var(--color-cream) !important;
+  color: var(--color-olive-dark) !important;
+  border: 1px solid var(--color-cream-dark) !important;
+  border-radius: 0.75rem !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  padding: 0.75rem 1.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.bukazu-app .bu-tabs .bu-tab.active,
+.bukazu-app .bu-tabs .bu-tab:hover,
+.bukazu-app .tabs .tab.active,
+.bukazu-app .tabs .tab:hover,
+.bukazu-app .bu-tab.active,
+.bukazu-app .bu-tab:hover {
+  background: var(--color-terracotta) !important;
+  color: #fff !important;
+  border-color: var(--color-terracotta) !important;
+}
+
+/* --- Step indicators --- */
+.bukazu-app .steps,
+.bukazu-app .bu-steps,
+.bukazu-app [class*="step"] {
+  font-family: var(--font-lato), sans-serif !important;
+}
+
+.bukazu-app .bu-steps .bu-step .bu-step-number,
+.bukazu-app .steps .step .step-number {
+  background: var(--color-cream-dark) !important;
+  color: var(--color-olive-dark) !important;
+  border-radius: 50% !important;
+}
+
+.bukazu-app .bu-steps .bu-step.active .bu-step-number,
+.bukazu-app .steps .step.active .step-number {
+  background: var(--color-terracotta) !important;
+  color: #fff !important;
+}
+
+/* --- Sidebar / picker panel --- */
+.bukazu-app .calendar--picker,
+.bukazu-app .bu-sidebar,
+.bukazu-app .sidebar {
+  background: var(--color-warm-white) !important;
+  border: 1px solid var(--color-cream-dark) !important;
+  border-radius: 1rem !important;
+}
+
+.bukazu-app .calendar--picker h3,
+.bukazu-app .calendar--picker label,
+.bukazu-app .bu-sidebar h3,
+.bukazu-app .bu-sidebar label {
+  font-family: var(--font-playfair), serif !important;
+  color: var(--color-olive-dark) !important;
+}
+
+/* --- Select dropdowns --- */
+.bukazu-app select {
+  background: var(--color-warm-white) !important;
+  border: 1px solid var(--color-cream-dark) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  font-family: var(--font-lato), sans-serif !important;
+  font-size: 0.875rem !important;
+  color: var(--color-text-dark) !important;
+  appearance: auto !important;
+}
+
+.bukazu-app select:focus {
+  border-color: var(--color-olive) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(90, 98, 95, 0.15) !important;
+}
+
+/* --- Price display in sidebar --- */
+.bukazu-app .cell .price,
+.bukazu-app .cell .bu-price {
+  font-size: 0.6rem !important;
+  color: var(--color-text-muted) !important;
+}
+
+/* --- Legend --- */
+.bukazu-app .legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-cream-dark);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.bukazu-app .legend-field {
+  width: 1rem !important;
+  height: 1rem !important;
+  border-radius: 0.25rem !important;
+  border: none !important;
+}
+
+.bukazu-app .legend-field.booked {
+  background: var(--color-cream-dark) !important;
+  opacity: 0.5 !important;
+}
+
+.bukazu-app .legend-field.arrival,
+.bukazu-app .legend-field.departure {
+  background: var(--color-cream) !important;
+  border: 1px solid var(--color-olive-light) !important;
+}
+
+.bukazu-app .legend-field.last_minute_discount {
+  background: var(--color-terracotta-light) !important;
+}
+
+.bukazu-app .legend-field.selected {
+  background: var(--color-terracotta) !important;
+}
+
+/* --- Calendar picker (date + persons bar) --- */
+.bukazu-app .calendar--picker {
+  background: var(--color-cream);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.bukazu-app .calendar--picker--date,
+.bukazu-app .calendar--picker--persons {
+  color: var(--color-text-dark);
+  font-size: 0.875rem;
+}
+
+/* --- Form sections --- */
+.bukazu-app .form {
+  background: var(--color-warm-white);
+  border-radius: 1rem;
+}
+
+.bukazu-app .form-content {
+  padding: 1.5rem;
+}
+
+.bukazu-app .form-section {
+  margin-bottom: 1.5rem;
+}
+
+.bukazu-app .form-row label {
+  color: var(--color-olive-dark);
+  font-weight: 700;
+  font-size: 0.875rem;
+  margin-bottom: 0.375rem;
+}
+
+.bukazu-app .form-row input[type="text"],
+.bukazu-app .form-row input[type="email"],
+.bukazu-app .form-row input[type="tel"],
+.bukazu-app .form-row input[type="number"],
+.bukazu-app .form-row input[type="date"],
+.bukazu-app .form-row select,
+.bukazu-app .form-row textarea,
+.bukazu-app .bu-field input,
+.bukazu-app .bu-field select,
+.bukazu-app .bu-field textarea {
+  background: var(--color-warm-white);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-lato), sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-text-dark);
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.bukazu-app .form-row input:focus,
+.bukazu-app .form-row select:focus,
+.bukazu-app .form-row textarea:focus,
+.bukazu-app .bu-field input:focus,
+.bukazu-app .bu-field select:focus,
+.bukazu-app .bu-field textarea:focus {
+  border-color: var(--color-olive);
+  box-shadow: 0 0 0 2px rgba(90, 98, 95, 0.15);
+}
+
+/* --- Price overview --- */
+.bukazu-app .price-overview {
+  background: var(--color-cream);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.bukazu-app .price-overview .price {
+  font-family: var(--font-playfair), serif;
+  color: var(--color-olive-dark);
+  font-size: 1.5rem;
+}
+
+.bukazu-app .form-sum {
+  font-family: var(--font-playfair), serif;
+  color: var(--color-olive-dark);
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-top: 2px solid var(--color-cream-dark);
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.bukazu-app .costs-section {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* --- All buttons (generic) --- */
+.bukazu-app button,
+.bukazu-app .button,
+.bukazu-app input[type="submit"] {
+  font-family: var(--font-lato), sans-serif !important;
+  border-radius: 9999px !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  padding: 0.75rem 2rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+  line-height: 1.4 !important;
+  background: var(--color-cream) !important;
+  color: var(--color-olive-dark) !important;
+}
+
+.bukazu-app button:hover,
+.bukazu-app .button:hover,
+.bukazu-app input[type="submit"]:hover {
+  background: var(--color-cream-dark) !important;
+}
+
+/* Primary action buttons (book, submit, next) */
+.bukazu-app .price-overview button,
+.bukazu-app .price-overview .button,
+.bukazu-app .price-overview--book button,
+.bukazu-app .price-overview--book .button,
+.bukazu-app .form button[type="submit"],
+.bukazu-app .form input[type="submit"],
+.bukazu-app .result-button,
+.bukazu-app button.primary,
+.bukazu-app .btn-primary,
+.bukazu-app button[class*="primary"],
+.bukazu-app button[class*="next"],
+.bukazu-app button[class*="book"] {
+  background: var(--color-terracotta) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(184, 112, 75, 0.25) !important;
+}
+
+.bukazu-app .price-overview button:hover,
+.bukazu-app .price-overview .button:hover,
+.bukazu-app .price-overview--book button:hover,
+.bukazu-app .price-overview--book .button:hover,
+.bukazu-app .form button[type="submit"]:hover,
+.bukazu-app .form input[type="submit"]:hover,
+.bukazu-app .result-button:hover,
+.bukazu-app button.primary:hover,
+.bukazu-app .btn-primary:hover {
+  background: var(--color-terracotta-dark) !important;
+  box-shadow: 0 4px 12px rgba(184, 112, 75, 0.35) !important;
+}
+
+/* Secondary / navigation buttons */
+.bukazu-app .return-link,
+.bukazu-app .return-link a {
+  color: var(--color-olive);
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.bukazu-app .return-link:hover,
+.bukazu-app .return-link a:hover {
+  color: var(--color-terracotta);
+}
+
+/* --- Pagination --- */
+.bukazu-app .bu-pagination,
+.bukazu-app .bu-paginator {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.bukazu-app .bu-pagination button,
+.bukazu-app .bu-paginator button {
+  background: var(--color-cream);
+  color: var(--color-olive);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.bukazu-app .bu-pagination button:hover,
+.bukazu-app .bu-paginator button:hover {
+  background: var(--color-olive);
+  color: #fff;
+}
+
+/* --- House details / booking options --- */
+.bukazu-app .house-details {
+  background: var(--color-warm-white);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.bukazu-app .booking_option {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-cream-dark);
+  font-size: 0.875rem;
+  transition: background 0.15s ease;
+}
+
+.bukazu-app .booking_option:last-child {
+  border-bottom: none;
+}
+
+.bukazu-app .booking_option:hover {
+  background: var(--color-cream);
+}
+
+/* --- Result / search cards --- */
+.bukazu-app .bu-card,
+.bukazu-app .bukazu-result {
+  background: var(--color-warm-white);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.bukazu-app .bu-card:hover,
+.bukazu-app .bukazu-result:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.bukazu-app .result-title {
+  font-family: var(--font-playfair), serif;
+  color: var(--color-olive-dark);
+}
+
+.bukazu-app .result-place {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.bukazu-app .result-price {
+  font-family: var(--font-playfair), serif;
+  color: var(--color-olive-dark);
+  font-size: 1.25rem;
+}
+
+/* --- Modal --- */
+.bukazu-app .bukazu-modal-container {
+  background: rgba(58, 58, 53, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.bukazu-app .bukazu-modal {
+  background: var(--color-warm-white);
+  border-radius: 1rem;
+  border: 1px solid var(--color-cream-dark);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.bukazu-app .bukazu-modal-footer {
+  background: var(--color-cream);
+  border-top: 1px solid var(--color-cream-dark);
+  padding: 1rem 1.5rem;
+}
+
+.bukazu-app .bukazu-modal-escape {
+  color: var(--color-olive-light);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.bukazu-app .bukazu-modal-escape:hover {
+  color: var(--color-terracotta);
+}
+
+/* --- Reviews --- */
+.bukazu-app .bu_single_review {
+  background: var(--color-warm-white);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.bukazu-app .bu_score__rating {
+  background: var(--color-olive);
+  color: #fff;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+
+.bukazu-app .bu_score__rating.best {
+  background: var(--color-olive-dark);
+}
+
+.bukazu-app .bu_score__rating.good {
+  background: var(--color-olive);
+}
+
+.bukazu-app .bu_score__rating.medium {
+  background: var(--color-warm-brown);
+}
+
+.bukazu-app .bu_score__rating.low {
+  background: var(--color-text-muted);
+}
+
+/* --- Filters --- */
+.bukazu-app .filters-button {
+  background: var(--color-cream);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 0.75rem;
+  color: var(--color-olive-dark);
+  font-weight: 700;
+  padding: 0.75rem 1.25rem;
+}
+
+.bukazu-app .filters-button:hover {
+  background: var(--color-olive);
+  color: #fff;
+  border-color: var(--color-olive);
+}
+
+.bukazu-app .filters {
+  background: var(--color-warm-white);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+/* --- Messages --- */
+.bukazu-app .error-message,
+.bukazu-app .bu-error-message {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+.bukazu-app .success-message {
+  background: var(--color-cream);
+  color: var(--color-olive-dark);
+  border: 1px solid var(--color-olive-light);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+.bukazu-app .return-message {
+  background: var(--color-cream);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/* --- Info button / icon --- */
+.bukazu-app .info-button {
+  color: var(--color-olive-light);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.bukazu-app .info-button:hover {
+  color: var(--color-terracotta);
+}
+
+/* --- Terms --- */
+.bukazu-app .terms {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.bukazu-app .terms a {
+  color: var(--color-terracotta);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.bukazu-app .terms a:hover {
+  color: var(--color-terracotta-dark);
+}
+
+/* --- Discount code --- */
+.bukazu-app .bu_discount_code {
+  background: var(--color-cream);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+/* --- Global link styling within widget --- */
+.bukazu-app a {
+  color: var(--color-terracotta);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.bukazu-app a:hover {
+  color: var(--color-terracotta-dark);
+}
+
+/* --- Remove any remaining colored dots/circles from the widget --- */
+.bukazu-app .cell::before,
+.bukazu-app .cell::after,
+.bukazu-app td::before,
+.bukazu-app td::after,
+.bukazu-app .bu-calendar td::before,
+.bukazu-app .bu-calendar td::after {
+  display: none !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  content: none !important;
+}
+
+/* Force override ALL Bukazu inline background-colors on calendar cells */
+.bukazu-app .bu-calendar td[style],
+.bukazu-app .bu-calendar .cell[style],
+.bukazu-app .bu-calendar td > div[style],
+.bukazu-app .bu-calendar td > span[style] {
+  background-color: transparent !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+/* Re-apply our styles on top of the forced reset */
+.bukazu-app .bu-calendar .cell.booked[style],
+.bukazu-app .bu-calendar td.booked[style],
+.bukazu-app .bu-calendar .cell.booked-departure[style] {
+  background: transparent !important;
+  color: var(--color-text-muted) !important;
+  opacity: 0.35 !important;
+}
+
+.bukazu-app .bu-calendar .cell.arrival[style],
+.bukazu-app .bu-calendar td.arrival[style],
+.bukazu-app .bu-calendar .cell.departure[style],
+.bukazu-app .bu-calendar td.departure[style],
+.bukazu-app .bu-calendar .cell.departure-arrival[style],
+.bukazu-app .bu-calendar td.departure-arrival[style] {
+  background: var(--color-cream) !important;
+  color: var(--color-olive-dark) !important;
+}
+
+.bukazu-app .bu-calendar .cell.selected[style],
+.bukazu-app .bu-calendar td.selected[style] {
+  background: var(--color-terracotta) !important;
+  color: #fff !important;
+}
+
+.bukazu-app .bu-calendar .cell.discount[style],
+.bukazu-app .bu-calendar td.discount[style] {
+  background: var(--color-cream) !important;
+  color: var(--color-terracotta-dark) !important;
+}
+
+/* Kill all border-radius that makes circles — use subtle squares instead */
+.bukazu-app .bu-calendar td,
+.bukazu-app .bu-calendar .cell {
+  border-radius: 0.375rem !important;
+}
+
+/* Override any colored legend field backgrounds */
+.bukazu-app .legend-field[style] {
+  border-radius: 0.25rem !important;
+}
+
+/* --- Age description --- */
+.bukazu-app .age-description {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* --- Input description helper text --- */
+.bukazu-app .bu-input-description {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
 }
