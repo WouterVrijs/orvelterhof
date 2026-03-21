@@ -151,7 +151,7 @@ export default function BookingDetails({
       sessionStorage.setItem(CONTACT_STORAGE_KEY, JSON.stringify(contact));
     } catch { /* storage full — proceed anyway */ }
 
-    const params = new URLSearchParams({ stap: "4" });
+    const params = new URLSearchParams({ stap: "5" });
     if (isArrangement && arrangement) {
       params.set("type", "arrangement");
       params.set("arrangement", JSON.stringify(arrangement));
@@ -183,7 +183,7 @@ export default function BookingDetails({
         aankomst: period.checkIn,
         vertrek: period.checkOut,
         personen: String(period.guests),
-        stap: "2",
+        stap: "3",
       });
       router.push(`/boeken?${params.toString()}`);
     }
@@ -206,7 +206,7 @@ export default function BookingDetails({
   if (availCheck === "unavailable") {
     return (
       <>
-        <BookingStepIndicator currentStep={3} />
+        <BookingStepIndicator currentStep={4} />
         <div className="mx-auto max-w-xl text-center">
           <div className="mb-6 flex justify-center">
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
@@ -237,7 +237,7 @@ export default function BookingDetails({
 
   return (
     <>
-      <BookingStepIndicator currentStep={3} />
+      <BookingStepIndicator currentStep={4} />
 
       {isLoading && (
         <div className="mb-8 flex items-center justify-center gap-3 rounded-xl border border-terracotta/30 bg-terracotta/5 px-4 py-4">

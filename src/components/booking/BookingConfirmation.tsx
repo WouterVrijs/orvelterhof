@@ -129,7 +129,7 @@ export default function BookingConfirmation({
   if (submitStatus === "success") {
     return (
       <>
-        <BookingStepIndicator currentStep={4} />
+        <BookingStepIndicator currentStep={5} />
         <div className="mx-auto max-w-xl text-center">
           <div className="mb-6 flex justify-center">
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#5a9a5a]/10">
@@ -186,7 +186,7 @@ export default function BookingConfirmation({
   if (availCheck === "unavailable") {
     return (
       <>
-        <BookingStepIndicator currentStep={4} />
+        <BookingStepIndicator currentStep={5} />
         <div className="mx-auto max-w-xl text-center">
           <div className="mb-6 flex justify-center">
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
@@ -214,7 +214,7 @@ export default function BookingConfirmation({
   // ── Main confirmation view ──────────────────────────────────
   return (
     <>
-      <BookingStepIndicator currentStep={4} />
+      <BookingStepIndicator currentStep={5} />
 
       {isLoading && (
         <div className="mb-8 flex items-center justify-center gap-3 rounded-xl border border-terracotta/30 bg-terracotta/5 px-4 py-4">

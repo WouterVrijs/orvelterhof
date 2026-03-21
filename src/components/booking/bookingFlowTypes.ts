@@ -140,6 +140,20 @@ export interface BookingSubmissionResult {
   bookingReference?: string;
 }
 
+// ── Step 2 output: Travel Party ──────────────────────────────────
+
+export interface TravelParty {
+  adults: number;    // vanaf 18 jaar
+  children: number;  // 3 t/m 17 jaar
+  babies: number;    // t/m 2 jaar
+}
+
+export const DEFAULT_TRAVEL_PARTY: TravelParty = {
+  adults: 2,
+  children: 0,
+  babies: 0,
+};
+
 // ── Flow steps ───────────────────────────────────────────────────
 
-export type BookingFlowStep = 1 | 2 | 3 | 4;
+export type BookingFlowStep = 1 | 2 | 3 | 4 | 5;

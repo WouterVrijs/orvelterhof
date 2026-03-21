@@ -3,6 +3,7 @@
 import { useMemo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import BookingCalendar from "@/components/booking";
+import TravelPartyStep from "@/components/booking/TravelPartyStep";
 import BookingUpgrades from "@/components/booking/BookingUpgrades";
 import BookingDetails from "@/components/booking/BookingDetails";
 import BookingConfirmation from "@/components/booking/BookingConfirmation";
@@ -71,22 +72,23 @@ export default function BookingCalendarWrapper({
 
   // ── Step routing ────────────────────────────────────────────
   // For arrangements: step 1 → step 3 → step 4 (skip upgrades)
-  // For verblijf: step 1 → step 2 → step 3 → step 4
+  // For verblijf: step 1 → step 2 (reisgezelschap) → step 3 (upgrades) → step 4 (gegevens) → step 5 (bevestigen)
   const hasVerblijfDates = !!(aankomst && vertrek);
   const hasArrangement = bookingType === "arrangement" && arrangement !== null;
 
   const currentStep: BookingFlowStep =
     bookingType === "arrangement"
       ? hasArrangement
-        ? stap === "4" ? 4
-          : stap === "3" ? 3
+        ? stap === "5" ? 5
+          : stap === "4" ? 4
             : 1
         : 1
       : hasVerblijfDates
-        ? stap === "4" ? 4
-          : stap === "3" ? 3
-            : stap === "2" ? 2
-              : 1
+        ? stap === "5" ? 5
+          : stap === "4" ? 4
+            : stap === "3" ? 3
+              : stap === "2" ? 2
+                : 1
         : 1;
 
   // ── Period (verblijf only) ──────────────────────────────────
@@ -175,9 +177,22 @@ export default function BookingCalendarWrapper({
 
   // ── ARRANGEMENT FLOW ────────────────────────────────────────
 
+  // ── Travel party from URL params ────────────────────────────
+  const travelParty = useMemo(() => {
+    const v = searchParams.get("volwassenen");
+    const k = searchParams.get("kinderen");
+    const b = searchParams.get("babys");
+    if (!v) return null;
+    return {
+      adults: parseInt(v, 10) || 0,
+      children: parseInt(k ?? "0", 10),
+      babies: parseInt(b ?? "0", 10),
+    };
+  }, [searchParams]);
+
   if (bookingType === "arrangement") {
-    // Step 4: Bevestigen
-    if (currentStep === 4 && arrangement) {
+    // Step 5: Bevestigen
+    if (currentStep === 5 && arrangement) {
       const contact = getContact();
       if (!contact) {
         return (
@@ -198,8 +213,8 @@ export default function BookingCalendarWrapper({
       );
     }
 
-    // Step 3: Gegevens
-    if (currentStep === 3 && arrangement) {
+    // Step 4: Gegevens
+    if (currentStep === 4 && arrangement) {
       return (
         <BookingDetails
           period={null}
@@ -220,9 +235,10 @@ export default function BookingCalendarWrapper({
     );
   }
 
-  // ── VERBLIJF FLOW (existing) ────────────────────────────────
+  // ── VERBLIJF FLOW ─────────────────────────────────────────
 
-  if (currentStep === 4 && period) {
+  // Step 5: Bevestigen
+  if (currentStep === 5 && period) {
     const contact = getContact();
     if (!contact) {
       return <BookingDetails period={period} bookingType="verblijf" />;
@@ -237,12 +253,19 @@ export default function BookingCalendarWrapper({
     );
   }
 
-  if (currentStep === 3 && period) {
+  // Step 4: Gegevens
+  if (currentStep === 4 && period) {
     return <BookingDetails period={period} bookingType="verblijf" />;
   }
 
-  if (currentStep === 2 && period) {
+  // Step 3: Upgrades
+  if (currentStep === 3 && period) {
     return <BookingUpgrades period={period} initialUpgrades={upgrades} pricingData={pricingData} />;
+  }
+
+  // Step 2: Reisgezelschap
+  if (currentStep === 2 && period) {
+    return <TravelPartyStep period={period} initialParty={travelParty ?? undefined} />;
   }
 
   return (

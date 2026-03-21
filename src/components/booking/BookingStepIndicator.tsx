@@ -21,9 +21,10 @@ export default function BookingStepIndicator({
 
   const STEPS = [
     { step: 1 as const, label: t("stepVerblijf") },
-    { step: 2 as const, label: t("stepUpgrades") },
-    { step: 3 as const, label: t("stepGegevens") },
-    { step: 4 as const, label: t("stepBevestigen") },
+    { step: 2 as const, label: t("stepReisgezelschap") },
+    { step: 3 as const, label: t("stepUpgrades") },
+    { step: 4 as const, label: t("stepGegevens") },
+    { step: 5 as const, label: t("stepBevestigen") },
   ] as const;
 
   return (

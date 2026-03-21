@@ -111,7 +111,7 @@ export default function BookingUpgrades({
       aankomst: period.checkIn,
       vertrek: period.checkOut,
       personen: String(period.guests),
-      stap: "3",
+      stap: "4",
     });
     const activeExtras = extras.filter((e) => e.value > 0);
     if (activeExtras.length > 0) {
@@ -129,7 +129,7 @@ export default function BookingUpgrades({
   if (availCheck === "unavailable") {
     return (
       <>
-        <BookingStepIndicator currentStep={2} />
+        <BookingStepIndicator currentStep={3} />
         <div className="mx-auto max-w-xl text-center">
           <div className="mb-6 flex justify-center">
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
@@ -158,7 +158,7 @@ export default function BookingUpgrades({
 
   return (
     <>
-      <BookingStepIndicator currentStep={2} />
+      <BookingStepIndicator currentStep={3} />
 
       {/* Loading state */}
       {isLoading && (
