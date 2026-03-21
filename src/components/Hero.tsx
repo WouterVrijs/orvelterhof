@@ -1,9 +1,17 @@
 import { getTranslations } from "next-intl/server";
 import { HeroSearchBar } from "./HeroSearchBar";
 import HeroSlideshow from "./HeroSlideshow";
+import { fetchCalendarData } from "@/lib/api/calendarService";
+import { addMonths, todayISO } from "@/components/booking/dateUtils";
 
 export default async function Hero() {
   const t = await getTranslations("hero");
+
+  // Fetch availability data to show booked dates in the calendar
+  const calendarData = await fetchCalendarData(todayISO(), addMonths(new Date(), 12));
+  const unavailableDates = calendarData
+    ?.filter((day) => day.status === "booked")
+    .map((day) => day.date) ?? [];
 
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center overflow-visible">
@@ -34,7 +42,7 @@ export default async function Hero() {
 
       {/* Search bar — bottom, raised slightly */}
       <div className="absolute bottom-12 left-0 right-0 z-10 flex justify-center px-4">
-        <HeroSearchBar unavailableDates={[]} />
+        <HeroSearchBar unavailableDates={unavailableDates} />
       </div>
     </section>
   );
