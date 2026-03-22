@@ -4,6 +4,9 @@ import { getTranslations } from "next-intl/server";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BusinessPackages from "@/components/BusinessPackages";
+import { HeroSearchBar } from "@/components/HeroSearchBar";
+import { fetchCalendarData } from "@/lib/api/calendarService";
+import { addMonths, todayISO } from "@/components/booking/dateUtils";
 import {
   MapPin,
   TreePine,
@@ -26,6 +29,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function VergaderlocatiePage() {
   const t = await getTranslations("vergaderlocatie");
+
+  // Fetch availability data for the search bar calendar
+  const calendarData = await fetchCalendarData(todayISO(), addMonths(new Date(), 12));
+  const unavailableDates = calendarData
+    ?.filter((day) => day.status === "booked")
+    .map((day) => day.date) ?? [];
 
   const USPS = [
     { icon: MapPin, title: t("uspBereikbaarTitle"), text: t("uspBereikbaarText") },
@@ -81,16 +90,30 @@ export default async function VergaderlocatiePage() {
     <>
       <Header />
       <main>
-        {/* Hero */}
-        <section className="relative bg-[#545959] pb-20 pt-32">
-          <div className="mx-auto max-w-7xl px-6 text-center">
-            <p className="mb-3 font-[family-name:var(--font-lato)] text-[0.75rem] font-bold uppercase tracking-[0.2em] text-[#c8835e]">
+        {/* Hero — full-screen with background image */}
+        <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-visible md:min-h-screen">
+          {/* Background image */}
+          <Image
+            src="/images/vergaderlocatie-drenthe-orvelter-hof-11-1024x683.jpg"
+            alt="Vergaderlocatie Orvelter Hof"
+            fill
+            className="object-cover"
+            priority
+          />
+
+          {/* Dark overlay */}
+          <div className="pointer-events-none absolute inset-0 z-[1] bg-black/40" />
+
+          {/* Center content */}
+          <div className="relative z-10 flex flex-col items-center px-6 text-center">
+            <p className="mb-4 font-[family-name:var(--font-lato)] text-[0.7rem] font-bold uppercase tracking-[0.3em] text-white/80">
               {t("heroTagline")}
             </p>
-            <h1 className="mb-4 font-[family-name:var(--font-playfair)] text-[2.25rem] text-white md:text-[3.813rem]">
+            <div className="mx-auto mb-6 h-px w-10 bg-white/50" />
+            <h1 className="mb-6 font-[family-name:var(--font-playfair)] text-[2.5rem] uppercase leading-[1.1] tracking-wide text-white md:text-[3.5rem] lg:text-[4.5rem]">
               {t("heroTitle")}
             </h1>
-            <p className="mx-auto mb-8 max-w-2xl font-[family-name:var(--font-lato)] text-[1rem] font-light leading-relaxed text-white/80">
+            <p className="mx-auto mb-10 max-w-2xl font-[family-name:var(--font-lato)] text-[1rem] font-light leading-relaxed text-white/80">
               {t("heroSubtitle")}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
@@ -102,11 +125,16 @@ export default async function VergaderlocatiePage() {
               </a>
               <a
                 href="#arrangementen"
-                className="rounded-full border border-white/30 px-8 py-3.5 font-[family-name:var(--font-lato)] text-sm font-bold text-white transition-all hover:border-white/60 hover:bg-white/10"
+                className="border border-white/60 px-8 py-3 font-[family-name:var(--font-lato)] text-[0.7rem] font-bold uppercase tracking-[0.25em] text-white transition-all hover:bg-white hover:text-[#3a3a35]"
               >
                 {t("ctaArrangementen")}
               </a>
             </div>
+          </div>
+
+          {/* Search bar — bottom */}
+          <div className="absolute bottom-12 left-0 right-0 z-10 flex justify-center px-4">
+            <HeroSearchBar unavailableDates={unavailableDates} />
           </div>
         </section>
 

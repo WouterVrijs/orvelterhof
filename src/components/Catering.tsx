@@ -14,7 +14,7 @@ export default async function Catering() {
     {
       title: t("cateringTitle"),
       price: t("cateringPrice"),
-      image: "/images/keuken-groepsaccommodatie-drenthe-orvelter-hof.jpg",
+      image: "/images/birgit-flug.webp",
       href: "/contact",
     },
     {
