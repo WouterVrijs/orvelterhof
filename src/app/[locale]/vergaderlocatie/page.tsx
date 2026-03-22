@@ -17,6 +17,9 @@ import {
   Bed,
   Wind,
   Check,
+  SlidersHorizontal,
+  Zap,
+  UtensilsCrossed,
 } from "lucide-react";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -37,11 +40,18 @@ export default async function VergaderlocatiePage() {
     .map((day) => day.date) ?? [];
 
   const USPS = [
-    { icon: MapPin, title: t("uspBereikbaarTitle"), text: t("uspBereikbaarText") },
-    { icon: TreePine, title: t("uspRustigTitle"), text: t("uspRustigText") },
-    { icon: Lock, title: t("uspExclusiefTitle"), text: t("uspExclusiefText") },
-    { icon: Car, title: t("uspParkerenTitle"), text: t("uspParkerenText") },
-    { icon: Heart, title: t("uspServiceTitle"), text: t("uspServiceText") },
+    { icon: MapPin, text: t("uspBereikbaarText") },
+    { icon: TreePine, text: t("uspRustigText") },
+    { icon: Lock, text: t("uspExclusiefText") },
+    { icon: Car, text: t("uspParkerenText") },
+    { icon: Heart, text: t("uspServiceText") },
+  ];
+
+  const STATS = [
+    { value: "17", label: t("statKamers") },
+    { value: "30", label: t("statPersonen") },
+    { value: "6", label: t("statArrangementen") },
+    { value: "100%", label: t("statExclusief") },
   ];
 
   const FEATURES = [
@@ -118,12 +128,6 @@ export default async function VergaderlocatiePage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <a
-                href="/contact"
-                className="rounded-full bg-terracotta px-8 py-3.5 font-[family-name:var(--font-lato)] text-sm font-bold text-white shadow-md transition-all hover:bg-terracotta-dark hover:shadow-lg active:scale-[0.98]"
-              >
-                {t("ctaOfferte")}
-              </a>
-              <a
                 href="#arrangementen"
                 className="border border-white/60 px-8 py-3 font-[family-name:var(--font-lato)] text-[0.7rem] font-bold uppercase tracking-[0.25em] text-white transition-all hover:bg-white hover:text-[#3a3a35]"
               >
@@ -134,28 +138,26 @@ export default async function VergaderlocatiePage() {
 
           {/* Search bar — bottom */}
           <div className="absolute bottom-12 left-0 right-0 z-10 flex justify-center px-4">
-            <HeroSearchBar unavailableDates={unavailableDates} />
+            <HeroSearchBar unavailableDates={unavailableDates} mode="zakelijk" />
           </div>
         </section>
 
         {/* USPs */}
-        <section className="bg-[#fbf8f6] py-14">
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-              {USPS.map((usp) => (
-                <div key={usp.title} className="text-center">
-                  <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-terracotta/10">
-                    <usp.icon size={22} className="text-terracotta" />
-                  </span>
-                  <h3 className="mb-1 font-[family-name:var(--font-playfair)] text-base text-[#4a524f]">
-                    {usp.title}
-                  </h3>
-                  <p className="font-[family-name:var(--font-lato)] text-xs leading-relaxed text-[#6b6b63]">
-                    {usp.text}
-                  </p>
-                </div>
-              ))}
-            </div>
+        <section className="bg-[#2a2a25]">
+          <div className="mx-auto flex max-w-7xl overflow-x-auto">
+            {USPS.map((usp) => (
+              <div
+                key={usp.text}
+                className="flex min-w-[200px] flex-1 items-center gap-4 px-5 py-5"
+              >
+                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10">
+                  <usp.icon size={18} className="text-terracotta" />
+                </span>
+                <p className="font-[family-name:var(--font-lato)] text-[0.6rem] font-bold uppercase tracking-[0.15em] text-white/60">
+                  {usp.text}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -181,7 +183,7 @@ export default async function VergaderlocatiePage() {
                   {t("introCtaOfferte")}
                 </a>
               </div>
-              <div className="overflow-hidden rounded-2xl shadow-lg">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg">
                 <Image
                   src="/images/vergaderlocatie-drenthe-orvelter-hof-15.jpg"
                   alt="Vergaderlocatie Orvelter Hof — zakelijke bijeenkomst"
@@ -189,6 +191,21 @@ export default async function VergaderlocatiePage() {
                   height={683}
                   className="h-full w-full object-cover"
                 />
+                {/* Stats overlay */}
+                <div className="absolute bottom-0 left-0 right-0 bg-terracotta/90 backdrop-blur-sm">
+                  <div className="grid grid-cols-4 divide-x divide-white/20 px-4 py-5">
+                    {STATS.map((stat) => (
+                      <div key={stat.label} className="text-center">
+                        <span className="font-[family-name:var(--font-playfair)] text-2xl font-bold text-white md:text-3xl">
+                          {stat.value}
+                        </span>
+                        <p className="mt-1 font-[family-name:var(--font-lato)] text-[0.6rem] font-bold uppercase tracking-[0.15em] text-white/80">
+                          {stat.label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -222,6 +239,146 @@ export default async function VergaderlocatiePage() {
                   </ul>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Vergaderen sectie */}
+        <section className="bg-white py-16 md:py-24">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+              {/* Left — image with facilities badge */}
+              <div className="relative">
+                <div className="overflow-hidden rounded-2xl">
+                  <Image
+                    src="/images/vergaderlocatie-drenthe-orvelter-hof-11-1024x683.jpg"
+                    alt="Vergaderzaal Orvelter Hof"
+                    width={1024}
+                    height={683}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                {/* Facilities badge */}
+                <div className="absolute -bottom-6 right-6 flex flex-col items-center rounded-xl bg-[#2a2a25] px-8 py-6 shadow-xl md:-right-6">
+                  <Monitor size={28} className="mb-2 text-white/70" />
+                  <span className="font-[family-name:var(--font-playfair)] text-3xl font-bold text-white">
+                    30
+                  </span>
+                  <span className="font-[family-name:var(--font-lato)] text-[0.6rem] font-bold uppercase tracking-[0.2em] text-white/60">
+                    {t("statPersonen")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Right — text content */}
+              <div>
+                <p className="mb-2 font-[family-name:var(--font-lato)] text-[0.75rem] font-bold uppercase tracking-[0.2em] text-terracotta">
+                  {t("featureVergaderenTitle")}
+                </p>
+                <h2 className="mb-4 font-[family-name:var(--font-playfair)] text-[2.25rem] text-[#4a524f] md:text-[2.75rem]">
+                  {t("vergaderenSectieTitle")}
+                </h2>
+                <p className="mb-8 font-[family-name:var(--font-lato)] text-base leading-relaxed text-[#6b6b63]">
+                  {t("vergaderenSectieText")}
+                </p>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                  {[
+                    { icon: SlidersHorizontal, title: t("vergaderenUsp1Title"), text: t("vergaderenUsp1Text") },
+                    { icon: Zap, title: t("vergaderenUsp2Title"), text: t("vergaderenUsp2Text") },
+                    { icon: UtensilsCrossed, title: t("vergaderenUsp3Title"), text: t("vergaderenUsp3Text") },
+                    { icon: Bed, title: t("vergaderenUsp4Title"), text: t("vergaderenUsp4Text") },
+                  ].map((usp) => (
+                    <div key={usp.title}>
+                      <usp.icon size={20} className="mb-2 text-terracotta" />
+                      <h4 className="mb-1 font-[family-name:var(--font-playfair)] text-base text-[#4a524f]">
+                        {usp.title}
+                      </h4>
+                      <p className="font-[family-name:var(--font-lato)] text-sm leading-relaxed text-[#6b6b63]">
+                        {usp.text}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Focus & ontspanning — bento grid */}
+        <section className="w-full bg-white py-0">
+          <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-[300px_300px]">
+            {/* Text block — top-left */}
+            <div className="flex flex-col justify-center bg-terracotta/20 p-8 md:p-10">
+              <p className="mb-2 font-[family-name:var(--font-lato)] text-[0.65rem] font-bold uppercase tracking-[0.2em] text-terracotta">
+                {t("featureFocusTitle")}
+              </p>
+              <h2 className="mb-4 font-[family-name:var(--font-playfair)] text-[1.5rem] leading-tight text-[#4a524f] md:text-[1.75rem]">
+                {t("featureFocusText")}
+              </h2>
+            </div>
+
+            {/* Image — Nationaal Park, tall (2 rows) */}
+            <div className="relative md:row-span-2">
+              <Image
+                src="/images/bryan-dijkhuizen-cDt3minJLoA-unsplash-2.webp"
+                alt="Fietsen door de Drentse natuur"
+                width={800}
+                height={600}
+                className="h-56 w-full object-cover md:absolute md:inset-0 md:h-full"
+              />
+            </div>
+
+            {/* Image — Fietsen, top-right wide */}
+            <div className="relative col-span-2 hidden md:block">
+              <Image
+                src="/images/Pitch-putt.webp"
+                alt="Pitch & putt in de omgeving"
+                fill
+                className="object-cover"
+              />
+            </div>
+
+            {/* Image — Orvelter Hof omgeving */}
+            <div className="relative hidden md:block">
+              <Image
+                src="/images/Nationaal-Park-Dwingelderveld.webp"
+                alt="Nationaal Park Dwingelderveld"
+                fill
+                className="object-cover"
+              />
+            </div>
+
+            {/* Info card */}
+            <div className="flex flex-col justify-center bg-terracotta/80 p-8 md:p-10">
+              <h3 className="mb-4 font-[family-name:var(--font-playfair)] text-[1.5rem] text-white">
+                {t("featureFocusTitle")}
+              </h3>
+              <ul className="space-y-2.5">
+                {[
+                  t("featureFocusItem1"),
+                  t("featureFocusItem2"),
+                  t("featureFocusItem3"),
+                  t("featureFocusItem4"),
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-center gap-2.5 font-[family-name:var(--font-lato)] text-sm text-white/90"
+                  >
+                    <Check size={15} className="shrink-0 text-white" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Image — Fietsen Drenthe */}
+            <div className="relative hidden md:block">
+              <Image
+                src="/images/andrei-popescu-87AAW39CZoU-unsplash-scaled.jpg"
+                alt="Fietsen door Drenthe"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
         </section>

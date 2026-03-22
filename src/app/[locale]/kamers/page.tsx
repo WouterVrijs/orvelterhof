@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ImageSlider from "@/components/ImageSlider";
 import {
   Bed,
   Bath,
@@ -68,140 +69,98 @@ export default async function KamersPage() {
     <>
       <Header />
       <main>
-        {/* Hero */}
-        <section className="bg-[#545959] pb-16 pt-32">
-          <div className="mx-auto max-w-7xl px-6 text-center">
-            <p className="mb-3 font-[family-name:var(--font-lato)] text-[0.75rem] font-bold uppercase tracking-[0.2em] text-[#c8835e]">
+        {/* Hero — full-width background image */}
+        <section className="relative flex min-h-[50vh] flex-col items-center justify-center md:min-h-[60vh]">
+          <Image
+            src="/images/slaapkamer-groepsaccommodatie-drenthe-orvelter-hof.jpg"
+            alt="Kamers Orvelter Hof"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="pointer-events-none absolute inset-0 bg-black/50" />
+          <div className="relative z-10 px-6 text-center">
+            <p className="mb-3 font-[family-name:var(--font-lato)] text-[0.75rem] font-bold uppercase tracking-[0.25em] text-white/70">
               {t("heroTagline")}
             </p>
-            <h1 className="mb-4 font-[family-name:var(--font-playfair)] text-[2.25rem] text-white md:text-[3.813rem]">
+            <div className="mx-auto mb-4 h-px w-10 bg-white/40" />
+            <h1 className="mb-4 font-[family-name:var(--font-playfair)] text-[2.5rem] text-white md:text-[3.5rem] lg:text-[4rem]">
               {t("heroTitle")}
             </h1>
-            <p className="mx-auto max-w-2xl font-[family-name:var(--font-lato)] text-[1rem] font-light leading-relaxed text-white/80">
+            <p className="mx-auto max-w-xl font-[family-name:var(--font-lato)] text-[1rem] font-light leading-relaxed text-white/80">
               {t("heroSubtitle")}
             </p>
           </div>
-        </section>
 
-        {/* Stats */}
-        <section className="bg-[#fbf8f6] py-12">
-          <div className="mx-auto max-w-3xl px-6">
-            <div className="grid grid-cols-3 gap-6">
-              {STATS.map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <span className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-terracotta/10">
-                    <stat.icon size={22} className="text-terracotta" />
-                  </span>
-                  <p className="font-[family-name:var(--font-playfair)] text-3xl text-[#4a524f]">
-                    {stat.value}
-                  </p>
-                  <p className="font-[family-name:var(--font-lato)] text-xs font-medium uppercase tracking-wider text-[#6b6b63]">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
+          {/* Page navbar */}
+          <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/60 to-transparent">
+            <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+              <nav className="flex gap-8">
+                {[
+                  { label: t("navKamers"), href: "#kamers" },
+                  { label: t("navExtra"), href: "#extra" },
+                  { label: t("navPlattegrond"), href: "#plattegrond" },
+                ].map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className="hidden font-[family-name:var(--font-lato)] text-[0.7rem] font-bold uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white sm:block"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+              <a
+                href="/boeken"
+                className="font-[family-name:var(--font-lato)] text-white"
+              >
+                <span className="font-[family-name:var(--font-playfair)] text-3xl">36</span>
+                <span className="ml-1 text-[0.7rem] uppercase tracking-wider text-white/70">/ {t("statPersonen")}</span>
+              </a>
             </div>
           </div>
         </section>
 
-        {/* Kamers */}
-        <section className="bg-white py-16 md:py-24">
+        {/* Kamers — description + gallery */}
+        <section id="kamers" className="bg-white py-16 md:py-24">
           <div className="mx-auto max-w-6xl px-6">
-            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+            <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+              {/* Image slider */}
+              <ImageSlider images={ROOM_IMAGES} />
+
+              {/* Text content */}
               <div>
                 <p className="mb-2 font-[family-name:var(--font-lato)] text-[0.75rem] font-bold uppercase tracking-[0.2em] text-terracotta">
                   {t("roomsTagline")}
                 </p>
-                <h2 className="mb-6 font-[family-name:var(--font-playfair)] text-2xl text-[#4a524f] md:text-3xl">
+                <h2 className="mb-6 font-[family-name:var(--font-playfair)] text-[1.75rem] text-[#4a524f] md:text-[2.25rem]">
                   {t("roomsTitle")}
                 </h2>
-                <p className="mb-6 font-[family-name:var(--font-lato)] text-base leading-relaxed text-[#6b6b63]">
+                <p className="mb-8 font-[family-name:var(--font-lato)] text-base leading-relaxed text-[#6b6b63]">
                   {t("roomsText")}
                 </p>
-                <ul className="space-y-3">
-                  {roomFeatures.map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-2 font-[family-name:var(--font-lato)] text-sm text-[#6b6b63]"
-                    >
-                      <Check size={14} className="mt-0.5 shrink-0 text-[#5a9a5a]" />
-                      {item}
-                    </li>
+                <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+                  {[
+                    { icon: Users, label: t("roomFeature1Short") },
+                    { icon: Bed, label: t("roomFeature2Short") },
+                    { icon: ShowerHead, label: t("roomFeature3Short") },
+                    { icon: Accessibility, label: t("roomFeature4Short") },
+                  ].map((usp) => (
+                    <div key={usp.label} className="flex flex-col items-center text-center">
+                      <usp.icon size={36} strokeWidth={1} className="mb-2 text-[#b0ada8]" />
+                      <p className="font-[family-name:var(--font-lato)] text-[0.7rem] font-medium uppercase tracking-wider text-[#6b6b63]">
+                        {usp.label}
+                      </p>
+                    </div>
                   ))}
-                </ul>
-              </div>
-
-              {/* Image grid */}
-              <div className="grid grid-cols-2 gap-3">
-                {ROOM_IMAGES.map((img) => (
-                  <div
-                    key={img.src}
-                    className="aspect-[4/3] overflow-hidden rounded-xl shadow-md"
-                  >
-                    <Image
-                      src={img.src}
-                      alt={img.alt}
-                      width={600}
-                      height={450}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Faciliteiten */}
-        <section className="bg-[#fbf8f6] py-16">
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="mb-12 text-center">
-              <p className="mb-2 font-[family-name:var(--font-lato)] text-[0.75rem] font-bold uppercase tracking-[0.2em] text-terracotta">
-                {t("facilitiesTagline")}
-              </p>
-              <h2 className="mb-4 font-[family-name:var(--font-playfair)] text-2xl text-[#4a524f] md:text-3xl">
-                {t("facilitiesTitle")}
-              </h2>
-            </div>
-
-            <div className="mb-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {FACILITIES.map((fac) => (
-                <div
-                  key={fac.text}
-                  className="flex items-start gap-4 rounded-2xl border border-[#ede6d8] bg-white p-6 shadow-sm"
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-terracotta/10">
-                    <fac.icon size={18} className="text-terracotta" />
-                  </span>
-                  <p className="font-[family-name:var(--font-lato)] text-sm leading-relaxed text-[#6b6b63]">
-                    {fac.text}
-                  </p>
                 </div>
-              ))}
-            </div>
-
-            {/* Facility images */}
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {FACILITY_IMAGES.map((img) => (
-                <div
-                  key={img.src}
-                  className="aspect-[4/3] overflow-hidden rounded-xl shadow-md"
-                >
-                  <Image
-                    src={img.src}
-                    alt={img.alt}
-                    width={600}
-                    height={450}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              ))}
+              </div>
             </div>
           </div>
         </section>
 
         {/* Extra info */}
-        <section className="bg-white py-16">
+        <section id="extra" className="bg-white py-16 md:py-20">
           <div className="mx-auto max-w-5xl px-6">
             <div className="grid gap-6 md:grid-cols-3">
               <div className="rounded-2xl border border-[#ede6d8] bg-[#fbf8f6] p-8 text-center">
@@ -242,7 +201,7 @@ export default async function KamersPage() {
             </div>
 
             {/* Plattegrond link */}
-            <div className="mt-10 text-center">
+            <div id="plattegrond" className="mt-10 text-center">
               <a
                 href="/plattegrond"
                 className="inline-flex rounded-full border border-[#ede6d8] bg-white px-8 py-3.5 font-[family-name:var(--font-lato)] text-sm font-bold text-[#4a524f] shadow-sm transition-all hover:border-olive hover:bg-olive/5"

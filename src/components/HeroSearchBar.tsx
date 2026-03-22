@@ -7,6 +7,8 @@ import { useTranslations } from "next-intl";
 /* ─── Types ─── */
 interface HeroSearchBarProps {
   unavailableDates?: string[];
+  /** "verblijf" = date range (default), "zakelijk" = single date for arrangements */
+  mode?: "verblijf" | "zakelijk";
 }
 
 interface CalendarMonth {
@@ -138,7 +140,8 @@ function MiniCalendarMonth({
 }
 
 /* ─── Main Component ─── */
-export function HeroSearchBar({ unavailableDates = [] }: HeroSearchBarProps) {
+export function HeroSearchBar({ unavailableDates = [], mode = "verblijf" }: HeroSearchBarProps) {
+  const isZakelijk = mode === "zakelijk";
   const router = useRouter();
   const t = useTranslations("search");
   const MONTH_NAMES = t("months").split(",");
@@ -179,6 +182,12 @@ export function HeroSearchBar({ unavailableDates = [] }: HeroSearchBarProps) {
 
   // Calendar date selection
   function handleDateSelect(ds: string) {
+    if (isZakelijk) {
+      setArrival(ds);
+      setDeparture(null);
+      setCalendarOpen(false);
+      return;
+    }
     if (!arrival || (arrival && departure)) {
       setArrival(ds);
       setDeparture(null);
@@ -201,6 +210,17 @@ export function HeroSearchBar({ unavailableDates = [] }: HeroSearchBarProps) {
 
   // Search
   function handleSearch() {
+    if (isZakelijk) {
+      if (!arrival) {
+        setPulseDates(true);
+        setTimeout(() => setPulseDates(false), 1000);
+        return;
+      }
+      router.push(
+        `/boeken?type=arrangement&datum=${arrival}&personen=${guests}`
+      );
+      return;
+    }
     if (!arrival || !departure) {
       setPulseDates(true);
       setTimeout(() => setPulseDates(false), 1000);
@@ -238,48 +258,73 @@ export function HeroSearchBar({ unavailableDates = [] }: HeroSearchBarProps) {
     <div ref={calRef} className="relative z-20 w-full max-w-3xl">
       {/* Visual bar */}
       <div className="flex flex-col rounded-2xl shadow-xl shadow-black/10 md:flex-row">
-        {/* ── White section: Check-in, Check-out, Guests ── */}
+        {/* ── White section ── */}
         <div className="flex flex-1 flex-row rounded-t-2xl bg-white/95 backdrop-blur-md md:rounded-l-2xl md:rounded-tr-none">
-          {/* Check-in */}
-          <button
-            type="button"
-            onClick={() => setCalendarOpen(!calendarOpen)}
-            className={`flex flex-1 flex-col items-center justify-center rounded-tl-2xl px-3 py-3 transition-colors hover:bg-[#f5f0ea] md:px-6 md:py-5 ${pulseDates ? "animate-pulse bg-[#f5f0ea]" : ""}`}
-          >
-            <span className="mb-0.5 font-[family-name:var(--font-lato)] text-[0.55rem] font-bold uppercase tracking-[0.15em] text-[#6b6b63] md:mb-1 md:text-[0.65rem] md:tracking-[0.2em]">
-              {t("checkIn")}
-            </span>
-            <div className="flex items-baseline gap-1">
-              <span className="font-[family-name:var(--font-playfair)] text-[1.75rem] leading-none text-[#3a3a35] md:text-[2.75rem]">
-                {arrivalDay}
-              </span>
-              <span className="font-[family-name:var(--font-lato)] text-[0.7rem] text-[#6b6b63] md:text-[0.9rem]">
-                {arrivalMonth}
-              </span>
-            </div>
-          </button>
+          {isZakelijk ? (
+            <>
+              {/* Single date field */}
+              <button
+                type="button"
+                onClick={() => setCalendarOpen(!calendarOpen)}
+                className={`flex flex-1 flex-col items-center justify-center rounded-tl-2xl px-3 py-3 transition-colors hover:bg-[#f5f0ea] md:px-6 md:py-5 ${pulseDates ? "animate-pulse bg-[#f5f0ea]" : ""}`}
+              >
+                <span className="mb-0.5 font-[family-name:var(--font-lato)] text-[0.55rem] font-bold uppercase tracking-[0.15em] text-[#6b6b63] md:mb-1 md:text-[0.65rem] md:tracking-[0.2em]">
+                  {t("date")}
+                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-[family-name:var(--font-playfair)] text-[1.75rem] leading-none text-[#3a3a35] md:text-[2.75rem]">
+                    {arrivalDay}
+                  </span>
+                  <span className="font-[family-name:var(--font-lato)] text-[0.7rem] text-[#6b6b63] md:text-[0.9rem]">
+                    {arrivalMonth}
+                  </span>
+                </div>
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Check-in */}
+              <button
+                type="button"
+                onClick={() => setCalendarOpen(!calendarOpen)}
+                className={`flex flex-1 flex-col items-center justify-center rounded-tl-2xl px-3 py-3 transition-colors hover:bg-[#f5f0ea] md:px-6 md:py-5 ${pulseDates ? "animate-pulse bg-[#f5f0ea]" : ""}`}
+              >
+                <span className="mb-0.5 font-[family-name:var(--font-lato)] text-[0.55rem] font-bold uppercase tracking-[0.15em] text-[#6b6b63] md:mb-1 md:text-[0.65rem] md:tracking-[0.2em]">
+                  {t("checkIn")}
+                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-[family-name:var(--font-playfair)] text-[1.75rem] leading-none text-[#3a3a35] md:text-[2.75rem]">
+                    {arrivalDay}
+                  </span>
+                  <span className="font-[family-name:var(--font-lato)] text-[0.7rem] text-[#6b6b63] md:text-[0.9rem]">
+                    {arrivalMonth}
+                  </span>
+                </div>
+              </button>
 
-          {/* Divider */}
-          <div className="my-auto h-8 w-px bg-[#e5e0d8] md:h-auto md:self-stretch" />
+              {/* Divider */}
+              <div className="my-auto h-8 w-px bg-[#e5e0d8] md:h-auto md:self-stretch" />
 
-          {/* Check-out */}
-          <button
-            type="button"
-            onClick={() => setCalendarOpen(!calendarOpen)}
-            className={`flex flex-1 flex-col items-center justify-center px-3 py-3 transition-colors hover:bg-[#f5f0ea] md:px-6 md:py-5 ${pulseDates ? "animate-pulse bg-[#f5f0ea]" : ""}`}
-          >
-            <span className="mb-0.5 font-[family-name:var(--font-lato)] text-[0.55rem] font-bold uppercase tracking-[0.15em] text-[#6b6b63] md:mb-1 md:text-[0.65rem] md:tracking-[0.2em]">
-              {t("checkOut")}
-            </span>
-            <div className="flex items-baseline gap-1">
-              <span className="font-[family-name:var(--font-playfair)] text-[1.75rem] leading-none text-[#3a3a35] md:text-[2.75rem]">
-                {departureDay}
-              </span>
-              <span className="font-[family-name:var(--font-lato)] text-[0.7rem] text-[#6b6b63] md:text-[0.9rem]">
-                {departureMonth}
-              </span>
-            </div>
-          </button>
+              {/* Check-out */}
+              <button
+                type="button"
+                onClick={() => setCalendarOpen(!calendarOpen)}
+                className={`flex flex-1 flex-col items-center justify-center px-3 py-3 transition-colors hover:bg-[#f5f0ea] md:px-6 md:py-5 ${pulseDates ? "animate-pulse bg-[#f5f0ea]" : ""}`}
+              >
+                <span className="mb-0.5 font-[family-name:var(--font-lato)] text-[0.55rem] font-bold uppercase tracking-[0.15em] text-[#6b6b63] md:mb-1 md:text-[0.65rem] md:tracking-[0.2em]">
+                  {t("checkOut")}
+                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-[family-name:var(--font-playfair)] text-[1.75rem] leading-none text-[#3a3a35] md:text-[2.75rem]">
+                    {departureDay}
+                  </span>
+                  <span className="font-[family-name:var(--font-lato)] text-[0.7rem] text-[#6b6b63] md:text-[0.9rem]">
+                    {departureMonth}
+                  </span>
+                </div>
+              </button>
+            </>
+          )}
 
           {/* Divider */}
           <div className="my-auto h-8 w-px bg-[#e5e0d8] md:h-auto md:self-stretch" />
@@ -346,9 +391,9 @@ export function HeroSearchBar({ unavailableDates = [] }: HeroSearchBarProps) {
           onClick={handleSearch}
           className="flex items-center justify-center rounded-b-2xl bg-terracotta px-6 py-3 font-[family-name:var(--font-lato)] text-[0.6rem] font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-terracotta-dark md:rounded-r-2xl md:rounded-bl-none md:px-10 md:py-6 md:text-[0.7rem] md:tracking-[0.2em]"
         >
-          {t("checkAvailabilityLine1")}
+          {isZakelijk ? t("viewArrangementsLine1") : t("checkAvailabilityLine1")}
           <br />
-          {t("checkAvailabilityLine2")}
+          {isZakelijk ? t("viewArrangementsLine2") : t("checkAvailabilityLine2")}
         </button>
       </div>
 
@@ -395,10 +440,10 @@ export function HeroSearchBar({ unavailableDates = [] }: HeroSearchBarProps) {
               cm={calBase}
               unavailable={unavailableSet.current}
               arrival={arrival}
-              departure={departure}
-              hovered={hovered}
+              departure={isZakelijk ? null : departure}
+              hovered={isZakelijk ? null : hovered}
               onSelect={handleDateSelect}
-              onHover={setHovered}
+              onHover={isZakelijk ? () => {} : setHovered}
               monthNames={MONTH_NAMES}
               dayLabels={DAY_LABELS}
             />
@@ -406,10 +451,10 @@ export function HeroSearchBar({ unavailableDates = [] }: HeroSearchBarProps) {
               cm={addMonths(calBase, 1)}
               unavailable={unavailableSet.current}
               arrival={arrival}
-              departure={departure}
-              hovered={hovered}
+              departure={isZakelijk ? null : departure}
+              hovered={isZakelijk ? null : hovered}
               onSelect={handleDateSelect}
-              onHover={setHovered}
+              onHover={isZakelijk ? () => {} : setHovered}
               monthNames={MONTH_NAMES}
               dayLabels={DAY_LABELS}
             />

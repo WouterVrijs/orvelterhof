@@ -18,8 +18,8 @@ function useNavItems(): NavItem[] {
     {
       label: t("stijlvolVerblijven"),
       children: [
-        { label: t("accommodatie"), href: "#accommodatie" },
         { label: t("kamers"), href: "/kamers" },
+        { label: t("faciliteiten"), href: "/faciliteiten" },
         { label: t("plattegrond"), href: "/plattegrond" },
         { label: t("tarieven"), href: "/tarieven" },
         { label: t("buffettenCatering"), href: "/buffetten-catering" },

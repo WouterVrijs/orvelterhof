@@ -55,6 +55,7 @@ export default function BookingCalendarWrapper({
   const aankomst = searchParams.get("aankomst");
   const vertrek = searchParams.get("vertrek");
   const personen = searchParams.get("personen");
+  const datum = searchParams.get("datum"); // single date for arrangements
   const stap = searchParams.get("stap");
 
   const guestCount = personen ? parseInt(personen, 10) : 2;
@@ -229,7 +230,7 @@ export default function BookingCalendarWrapper({
       <ArrangementPicker
         onTypeChange={handleTypeChange}
         initialArrangementId={arrangement?.arrangementId}
-        initialDate={arrangement?.date}
+        initialDate={arrangement?.date ?? datum ?? undefined}
         initialGuests={arrangement?.guests ?? guestCount}
         availabilityData={data}
       />
