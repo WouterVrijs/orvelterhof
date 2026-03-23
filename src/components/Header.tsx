@@ -38,11 +38,11 @@ function useNavItems(): NavItem[] {
       label: t("dagjeUit"),
       children: [
         { label: t("overzicht"), href: "/dagje-uit" },
-        { label: t("eropuitMetKinderen"), href: "/dagje-uit#kinderen" },
-        { label: t("spannendEnSportief"), href: "/dagje-uit#sportief" },
-        { label: t("natuurHistorie"), href: "/dagje-uit#natuur" },
-        { label: t("kunstCultuur"), href: "/dagje-uit#cultuur" },
-        { label: t("etenDrinken"), href: "/dagje-uit#eten" },
+        { label: t("eropuitMetKinderen"), href: "/dagje-uit/erop-uit-met-kinderen" },
+        { label: t("spannendEnSportief"), href: "/dagje-uit/spannend-en-sportief" },
+        { label: t("natuurHistorie"), href: "/dagje-uit/natuur-historie" },
+        { label: t("kunstCultuur"), href: "/dagje-uit/kunst-cultuur" },
+        { label: t("etenDrinken"), href: "/dagje-uit/eten-drinken" },
       ],
     },
     {

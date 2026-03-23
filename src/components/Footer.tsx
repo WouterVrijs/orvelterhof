@@ -162,7 +162,7 @@ export default async function Footer() {
             </div>
             <div className="flex items-center gap-6 font-[family-name:var(--font-lato)] text-xs text-white/50">
               <p>{t("copyright")}</p>
-              <a href="#" className="transition-colors hover:text-white/70">{t("sitemap")}</a>
+              <a href="/sitemap.xml" className="transition-colors hover:text-white/70">{t("sitemap")}</a>
               <a href="#" className="transition-colors hover:text-white/70">{t("links")}</a>
             </div>
           </div>
