@@ -266,7 +266,7 @@ export default function BookingDetails({
           <div className="mb-8">
             <div className="flex items-center gap-3">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-olive font-[family-name:var(--font-lato)] text-sm font-bold text-white">
-                3
+                4
               </span>
               <h2 className="font-[family-name:var(--font-playfair)] text-xl text-olive-dark md:text-2xl">
                 {t("yourDetails")}

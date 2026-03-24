@@ -16,6 +16,7 @@ interface CalendarMonthProps {
   isRangeEnd: (date: string) => boolean;
   onDateClick: (date: string) => void;
   onDateHover: (date: string | null) => void;
+  showPrices?: boolean;
 }
 
 function pad(n: number): string {
@@ -37,6 +38,7 @@ export default function CalendarMonth({
   isRangeEnd,
   onDateClick,
   onDateHover,
+  showPrices,
 }: CalendarMonthProps) {
   const t = useTranslations("bookingModule");
   const today = todayISO();
@@ -99,6 +101,7 @@ export default function CalendarMonth({
               isStart={isRangeStart(dateStr)}
               isEnd={isRangeEnd(dateStr)}
               isToday={dateStr === today}
+              showPrices={showPrices}
               onClick={onDateClick}
               onHover={onDateHover}
             />

@@ -16,7 +16,7 @@ import { submitBooking, type BookingActionState } from "@/actions/booking";
 import { confirmAvailabilityAction } from "@/lib/availability/actions";
 import { formatDisplayDate } from "./dateUtils";
 import BookingStepIndicator from "./BookingStepIndicator";
-import { Loader2, Check, AlertTriangle, Pencil } from "lucide-react";
+import { Loader2, Check, AlertTriangle, Pencil, CreditCard } from "lucide-react";
 
 interface BookingConfirmationProps {
   bookingType?: BookingType;
@@ -78,6 +78,15 @@ export default function BookingConfirmation({
     return () => { cancelled = true; };
   }, [period?.checkIn, period?.checkOut, isArrangement]);
 
+  // ── Payment option state ──────────────────────────────────
+  const [paymentOption, setPaymentOption] = useState<"full" | "deposit">("full");
+
+  const totalAmount = isArrangement
+    ? (arrangement?.totalPrice ?? 0)
+    : (period?.grandTotal ?? 0);
+  const depositAmount = Math.round(totalAmount * 0.3 * 100) / 100;
+  const payableAmount = paymentOption === "deposit" ? depositAmount : totalAmount;
+
   // ── Terms state ────────────────────────────────────────────
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [termsError, setTermsError] = useState(false);
@@ -100,12 +109,24 @@ export default function BookingConfirmation({
       : null;
   const bookingReference = state?.reservationNumber ?? null;
 
-  // Clear sessionStorage on success
+  // Redirect to Mollie checkout if payment URL is returned
   useEffect(() => {
-    if (state?.success) {
+    if (state?.success && state.paymentUrl) {
+      // Store reference for the return page
+      try {
+        sessionStorage.setItem("orvelterhof_payment_ref", state.reservationNumber ?? "");
+        sessionStorage.setItem("orvelterhof_payment_id", state.paymentId ?? "");
+      } catch { /* ignore */ }
+      window.location.href = state.paymentUrl;
+    }
+  }, [state?.success, state?.paymentUrl, state?.reservationNumber, state?.paymentId]);
+
+  // Clear sessionStorage on success (only if no payment redirect)
+  useEffect(() => {
+    if (state?.success && !state.paymentUrl) {
       try { sessionStorage.removeItem("orvelterhof_booking_contact"); } catch { /* ignore */ }
     }
-  }, [state?.success]);
+  }, [state?.success, state?.paymentUrl]);
 
   // ── Navigation helpers ──────────────────────────────────────
   function baseParams(): URLSearchParams {
@@ -133,7 +154,33 @@ export default function BookingConfirmation({
   const isSubmitting = isPending;
   const canConfirm = availCheck === "available" && !isSubmitting;
 
-  // ── Success state ───────────────────────────────────────────
+  // ── Redirecting to payment ──────────────────────────────────
+  if (submitStatus === "success" && state?.paymentUrl) {
+    return (
+      <>
+        <BookingStepIndicator currentStep={5} onStepClick={goToStep} />
+        <div className="mx-auto max-w-xl text-center">
+          <div className="mb-6 flex justify-center">
+            <Loader2 size={32} className="animate-spin text-terracotta" />
+          </div>
+          <h2 className="mb-3 font-[family-name:var(--font-playfair)] text-2xl text-olive-dark">
+            {t("redirectingToPayment")}
+          </h2>
+          <p className="mb-6 font-[family-name:var(--font-lato)] text-base leading-relaxed text-text-muted">
+            {t("redirectingToPaymentDescription")}
+          </p>
+          <a
+            href={state.paymentUrl}
+            className="inline-flex rounded-full bg-terracotta px-8 py-3 font-[family-name:var(--font-lato)] text-sm font-bold text-white shadow-md transition-all hover:bg-terracotta-dark hover:shadow-lg"
+          >
+            {t("goToPayment")}
+          </a>
+        </div>
+      </>
+    );
+  }
+
+  // ── Success state (no payment) ────────────────────────────
   if (submitStatus === "success") {
     return (
       <>
@@ -249,7 +296,7 @@ export default function BookingConfirmation({
           <div className="rounded-2xl border border-cream-dark bg-white p-6 shadow-sm">
             <div className="flex items-center gap-3">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-olive font-[family-name:var(--font-lato)] text-sm font-bold text-white">
-                4
+                5
               </span>
               <h2 className="font-[family-name:var(--font-playfair)] text-xl text-olive-dark md:text-2xl">
                 {t("reviewBooking")}
@@ -283,9 +330,13 @@ export default function BookingConfirmation({
           {/* Upgrades section (verblijf only) */}
           {!isArrangement && (
             <SummarySection title={t("extrasSection")} editLabel={t("edit")} onEdit={() => goToStep(2)}>
-              {upgrades.selectedOptions.length > 0 ? (
-                upgrades.selectedOptions.map((opt) => (
-                  <SummaryRow key={opt} label={opt} value="" />
+              {upgrades.extras.filter((e) => e.value > 0).length > 0 ? (
+                upgrades.extras.filter((e) => e.value > 0).map((extra) => (
+                  <SummaryRow
+                    key={extra.id}
+                    label={t(`extra${extra.id.charAt(0).toUpperCase()}${extra.id.slice(1)}` as Parameters<typeof t>[0])}
+                    value={extra.type === "yesno" ? t("extraYes") : String(extra.value)}
+                  />
                 ))
               ) : (
                 <p className="font-[family-name:var(--font-lato)] text-sm text-text-muted">
@@ -339,11 +390,72 @@ export default function BookingConfirmation({
             <input type="hidden" name="numberOfGuests" value={isArrangement ? (arrangement?.guests ?? 2) : (period?.guests ?? 2)} />
             <input type="hidden" name="guestNote" value={contact.remarks} />
             <input type="hidden" name="totalPrice" value={isArrangement ? (arrangement?.totalPrice ?? 0) : (period?.grandTotal ?? 0)} />
+            <input type="hidden" name="paymentOption" value={paymentOption} />
             {isArrangement && arrangement && (
               <>
                 <input type="hidden" name="arrangementId" value={arrangement.arrangementId} />
                 <input type="hidden" name="arrangementName" value={arrangement.name} />
               </>
+            )}
+
+            {/* Payment option */}
+            {totalAmount > 0 && (
+              <div className="mb-6">
+                <div className="mb-3 flex items-center gap-2">
+                  <CreditCard size={16} className="text-olive-light" />
+                  <h4 className="font-[family-name:var(--font-playfair)] text-base text-olive-dark">
+                    {t("paymentOptionTitle")}
+                  </h4>
+                </div>
+                <div className="space-y-2">
+                  <label
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors ${
+                      paymentOption === "full"
+                        ? "border-olive bg-olive/5"
+                        : "border-cream-dark hover:border-olive/40"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentOptionRadio"
+                      checked={paymentOption === "full"}
+                      onChange={() => setPaymentOption("full")}
+                      className="h-4 w-4 accent-olive"
+                    />
+                    <div className="flex-1">
+                      <p className="font-[family-name:var(--font-lato)] text-sm font-medium text-olive-dark">
+                        {t("payFullAmount")}
+                      </p>
+                      <p className="font-[family-name:var(--font-lato)] text-xs text-text-muted">
+                        &euro;{totalAmount.toLocaleString("nl-NL", { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                  </label>
+                  <label
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors ${
+                      paymentOption === "deposit"
+                        ? "border-olive bg-olive/5"
+                        : "border-cream-dark hover:border-olive/40"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentOptionRadio"
+                      checked={paymentOption === "deposit"}
+                      onChange={() => setPaymentOption("deposit")}
+                      className="h-4 w-4 accent-olive"
+                    />
+                    <div className="flex-1">
+                      <p className="font-[family-name:var(--font-lato)] text-sm font-medium text-olive-dark">
+                        {t("payDeposit")}
+                      </p>
+                      <p className="font-[family-name:var(--font-lato)] text-xs text-text-muted">
+                        &euro;{depositAmount.toLocaleString("nl-NL", { minimumFractionDigits: 2 })} ({t("depositPercentage")})
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
             )}
 
             {/* Terms checkbox */}

@@ -30,7 +30,8 @@ export interface ArrangementOption {
 export interface SelectedArrangement {
   arrangementId: string;
   name: string;
-  date: string;           // ISO "YYYY-MM-DD"
+  date: string;           // ISO "YYYY-MM-DD" — startdatum
+  dateEnd?: string;       // ISO "YYYY-MM-DD" — einddatum (alleen bij overnachting)
   guests: number;
   pricePerPerson: number;
   surchargeTotal: number;  // e.g. single room + tax

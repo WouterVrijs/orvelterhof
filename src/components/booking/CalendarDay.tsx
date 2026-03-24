@@ -13,6 +13,7 @@ interface CalendarDayProps {
   isStart: boolean;
   isEnd: boolean;
   isToday: boolean;
+  showPrices?: boolean;
   onClick: (date: string) => void;
   onHover: (date: string | null) => void;
 }
@@ -27,6 +28,7 @@ export default function CalendarDay({
   isStart,
   isEnd,
   isToday,
+  showPrices = true,
   onClick,
   onHover,
 }: CalendarDayProps) {
@@ -38,7 +40,7 @@ export default function CalendarDay({
   const isOutside = renderStatus === "outside_horizon" || renderStatus === "no_data";
   const isBlockedForCheckout = renderStatus === "blocked_for_checkout";
   const isDisabled = !isSelectable;
-  const hasPrice = status?.price != null && isSelectable;
+  const hasPrice = showPrices && status?.price != null && isSelectable;
 
   // ── Outer cell: carries the range background band ─────────
   let cellClasses =

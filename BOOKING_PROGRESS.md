@@ -218,15 +218,18 @@ De boekingsmodule bestaat uit 4 stappen:
 
 ---
 
-## 15. Online betalingen — `OPEN`
+## 15. Online betalingen — `DEELS GEREED`
 
-- [ ] **Mollie integreren** — Mollie SDK installeren, API keys in env vars (`MOLLIE_API_KEY`). Server Action voor het aanmaken van betalingen. Webhook endpoint voor statusupdates
-- [ ] **Betaalflow in stap 4 inbouwen** — na "Bevestig boeking" doorsturen naar Mollie betaalpagina (hosted checkout). Na betaling terugsturen naar bevestigingspagina met statuscheck
-- [ ] **Aanbetaling vs. volledig bedrag** — logica voor aanbetaling (bijv. 30%) of volledig bedrag. Keuze aanbieden aan de bezoeker of vast percentage hanteren
-- [ ] **Betaalstatus bijhouden** — betaalstatus (pending, paid, failed, refunded) opslaan in het boekingssysteem. Mollie webhook verwerken via API route (`/api/webhooks/mollie`)
-- [ ] **Betaalbevestiging tonen** — na succesvolle betaling een bevestigingspagina met betaalbewijs, referentienummer en vervolgstappen
-- [ ] **Foutafhandeling bij betaling** — mislukte betalingen, timeouts, en afgebroken sessies afvangen. Gebruiker terugsturen naar de boekingsflow met duidelijke melding
+- [x] **Mollie integreren** — `@mollie/api-client` SDK geïnstalleerd, `MOLLIE_API_KEY` en `NEXT_PUBLIC_SITE_URL` in env vars. Payment service in `lib/payment/mollie.ts` met `createPayment()`, `getPayment()`, `getPaymentByReference()`
+- [x] **Betaalflow in stap 4 inbouwen** — na "Bevestig boeking" wordt een Mollie payment aangemaakt en de gebruiker doorgestuurd naar de hosted checkout. Na betaling terugstuur naar `/boeken/betaling?ref=...`
+- [x] **Aanbetaling vs. volledig bedrag** — gebruiker kan kiezen tussen volledig bedrag of 30% aanbetaling in stap 4 (radio buttons)
+- [x] **Betaalstatus bijhouden** — Mollie webhook op `/api/webhooks/mollie` ontvangt statusupdates, haalt payment op bij Mollie, en forwardt naar het boekingssysteem
+- [x] **Betaalbevestiging tonen** — retourpagina (`/boeken/betaling`) toont betaalstatus (paid, pending, failed, expired, canceled) met polling
+- [x] **Foutafhandeling bij betaling** — mislukte, verlopen en geannuleerde betalingen worden afgevangen met duidelijke meldingen en "probeer opnieuw" links
 - [ ] **Terugbetalingen / annuleringen** — annuleringsbeleid implementeren. Automatische of handmatige refund via Mollie API
+- [ ] **Live Mollie API keys configureren** — test_placeholder vervangen door echte test/live keys
+
+**Kernbestanden:** `lib/payment/mollie.ts`, `actions/booking.ts`, `app/api/webhooks/mollie/route.ts`, `app/[locale]/boeken/betaling/`, `components/booking/BookingConfirmation.tsx`
 
 ---
 

@@ -32,12 +32,13 @@
 - [ ] Beschikbaarheidscheck ("controle niet gelukt") fixen — de availability check faalt momenteel bij elke datumselectie
 
 ### Online betalingen (Mollie)
-- [ ] Mollie SDK installeren en integreren (API keys in env vars)
-- [ ] Betaalflow in stap 4 inbouwen (hosted checkout → terugkeer)
-- [ ] Aanbetaling vs. volledig bedrag logica bepalen
-- [ ] Betaalstatus bijhouden (webhook via `/api/webhooks/mollie`)
-- [ ] Betaalbevestiging tonen na succesvolle betaling
-- [ ] Foutafhandeling bij betaling (mislukt, timeout, afgebroken)
+- [x] Mollie SDK installeren en integreren (API keys in env vars)
+- [x] Betaalflow in stap 4 inbouwen (hosted checkout → terugkeer)
+- [x] Aanbetaling vs. volledig bedrag — keuze aan de gast (30% of 100%)
+- [x] Betaalstatus bijhouden (webhook via `/api/webhooks/mollie`)
+- [x] Betaalbevestiging tonen na succesvolle betaling
+- [x] Foutafhandeling bij betaling (mislukt, timeout, afgebroken)
+- [ ] Live Mollie API keys configureren (test_placeholder vervangen)
 - [ ] Terugbetalingen / annuleringen via Mollie API
 
 ---

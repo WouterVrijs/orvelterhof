@@ -3,8 +3,8 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import type { ArrangementOption, SelectedArrangement, BookingType } from "./bookingFlowTypes";
-import { ARRANGEMENTS } from "./arrangementsConfig";
+import type { SelectedArrangement, BookingType } from "./bookingFlowTypes";
+import { ARRANGEMENTS, type ArrangementConfig } from "./arrangementsConfig";
 import BookingTypeSelector from "./BookingTypeSelector";
 import BookingStepIndicator from "./BookingStepIndicator";
 import CalendarMonth from "./CalendarMonth";
@@ -50,7 +50,8 @@ export default function ArrangementPicker({
 
   const [selectedId, setSelectedId] = useState<string | null>(initialArrangementId ?? null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [date, setDate] = useState(initialDate ?? "");
+  const [dateStart, setDateStart] = useState(initialDate ?? "");
+  const [dateEnd, setDateEnd] = useState("");
   const [guests, setGuests] = useState(initialGuests);
 
   // Calendar month navigation
@@ -94,30 +95,98 @@ export default function ArrangementPicker({
     return true;
   }
 
-  function isRangeStart(dateStr: string): boolean { return dateStr === date; }
-  function isRangeEnd(dateStr: string): boolean { return dateStr === date; }
-  function isInRange(): boolean { return false; }
-  function handleDateClick(dateStr: string) { setDate(dateStr); }
-
   const selected = useMemo(
     () => ARRANGEMENTS.find((a) => a.id === selectedId) ?? null,
     [selectedId],
   );
+
+  const needsRange = selected?.includesOvernight === true;
+  // 24-uurs = 1 night, 32-uurs = 2 nights
+  const requiredNights = selected?.id === "32-uurs" ? 2 : 1;
+
+  // Helper: add days to ISO date string
+  function addDays(isoDate: string, days: number): string {
+    const d = new Date(isoDate + "T12:00:00");
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function isRangeStart(dateStr: string): boolean { return dateStr === dateStart; }
+  function isRangeEnd(dateStr: string): boolean {
+    if (!needsRange) return dateStr === dateStart;
+    return dateStr === dateEnd;
+  }
+  function isInRange(dateStr: string): boolean {
+    if (!needsRange || !dateStart || !dateEnd) return false;
+    return dateStr > dateStart && dateStr < dateEnd;
+  }
+
+  function handleDateClick(dateStr: string) {
+    if (!needsRange) {
+      // Single-date mode for non-overnight arrangements
+      setDateStart(dateStr);
+      setDateEnd("");
+      return;
+    }
+
+    // Range mode for overnight arrangements
+    if (!dateStart || dateEnd) {
+      // First click or restart after complete selection
+      setDateStart(dateStr);
+      setDateEnd("");
+      return;
+    }
+
+    // Second click — check if it's the expected end date
+    const expectedEnd = addDays(dateStart, requiredNights);
+    if (dateStr === expectedEnd) {
+      // Check no booked dates in between
+      let blocked = false;
+      for (let i = 1; i < requiredNights; i++) {
+        const between = addDays(dateStart, i);
+        const info = statusMap.get(between);
+        if (info?.status === "booked") { blocked = true; break; }
+      }
+      if (!blocked) {
+        setDateEnd(dateStr);
+        return;
+      }
+    }
+
+    // Wrong date or blocked — restart with this date
+    setDateStart(dateStr);
+    setDateEnd("");
+  }
+
+  // Reset dateEnd when switching arrangement type
+  function handleSelectArrangement(id: string) {
+    const prev = ARRANGEMENTS.find((a) => a.id === selectedId);
+    const next = ARRANGEMENTS.find((a) => a.id === id);
+    setSelectedId(id);
+    if (prev?.includesOvernight !== next?.includesOvernight) {
+      setDateEnd("");
+    }
+  }
+
+  // Resolve translated name for selected arrangement
+  const selectedName = selected ? t(`arr_${selected.id}_name` as Parameters<typeof t>[0]) : "";
 
   // Price calculation
   const totalPrice = selected
     ? Math.round(selected.pricePerPerson * guests * 100) / 100
     : 0;
 
-  const canProceed = selected !== null && date !== "" && guests >= 2;
+  const canProceed = selected !== null && guests >= 2 &&
+    (needsRange ? (dateStart !== "" && dateEnd !== "") : dateStart !== "");
 
   function handleConfirm() {
-    if (!selected || !date) return;
+    if (!selected || !dateStart) return;
 
     const arrangement: SelectedArrangement = {
       arrangementId: selected.id,
-      name: selected.name,
-      date,
+      name: selectedName,
+      date: dateStart,
+      ...(needsRange && dateEnd ? { dateEnd } : {}),
       guests,
       pricePerPerson: selected.pricePerPerson,
       surchargeTotal: 0,
@@ -160,9 +229,13 @@ export default function ArrangementPicker({
               <ArrangementCard
                 key={arr.id}
                 arrangement={arr}
+                name={t(`arr_${arr.id}_name` as Parameters<typeof t>[0])}
+                description={t(`arr_${arr.id}_desc` as Parameters<typeof t>[0])}
+                features={arr.featureKeys.map((k) => t(k as Parameters<typeof t>[0]))}
+                surcharges={arr.surchargeKeys?.map((k) => t(k as Parameters<typeof t>[0])) ?? null}
                 isSelected={selectedId === arr.id}
                 isExpanded={expandedId === arr.id}
-                onSelect={() => setSelectedId(arr.id)}
+                onSelect={() => handleSelectArrangement(arr.id)}
                 onToggleExpand={() =>
                   setExpandedId(expandedId === arr.id ? null : arr.id)
                 }
@@ -190,7 +263,7 @@ export default function ArrangementPicker({
             {selected ? (
               <div className="mb-5 rounded-xl bg-cream px-4 py-3">
                 <p className="font-[family-name:var(--font-playfair)] text-base text-olive-dark">
-                  {selected.name}
+                  {selectedName}
                 </p>
                 <p className="font-[family-name:var(--font-lato)] text-xs text-text-muted">
                   &euro;{selected.pricePerPerson.toFixed(2).replace(".", ",")} {t("perPerson")}
@@ -211,11 +284,35 @@ export default function ArrangementPicker({
                 {t("dateLabel")}
               </p>
 
-              {date && (
-                <p className="mb-2 rounded-lg bg-olive/10 px-3 py-1.5 text-center font-[family-name:var(--font-lato)] text-sm font-medium text-olive-dark">
-                  {new Date(date + "T12:00:00").toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "long", year: "numeric" })}
+              {needsRange && dateStart && !dateEnd && (
+                <p className="mb-2 rounded-lg bg-terracotta/10 px-3 py-1.5 text-center font-[family-name:var(--font-lato)] text-xs text-terracotta">
+                  {t("selectCheckOutDate")}
                 </p>
               )}
+
+              {needsRange && dateStart && dateEnd ? (
+                <div className="mb-2 space-y-1">
+                  <div className="flex items-center justify-between rounded-lg bg-olive/10 px-3 py-1.5">
+                    <span className="font-[family-name:var(--font-lato)] text-[0.6875rem] font-bold uppercase tracking-wider text-text-muted">{t("arrCheckIn")}</span>
+                    <span className="font-[family-name:var(--font-lato)] text-sm font-medium text-olive-dark">
+                      {new Date(dateStart + "T12:00:00").toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" })}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg bg-olive/10 px-3 py-1.5">
+                    <span className="font-[family-name:var(--font-lato)] text-[0.6875rem] font-bold uppercase tracking-wider text-text-muted">{t("arrCheckOut")}</span>
+                    <span className="font-[family-name:var(--font-lato)] text-sm font-medium text-olive-dark">
+                      {new Date(dateEnd + "T12:00:00").toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" })}
+                    </span>
+                  </div>
+                  <p className="text-center font-[family-name:var(--font-lato)] text-xs text-text-muted">
+                    {t("nightCount", { count: requiredNights })}
+                  </p>
+                </div>
+              ) : dateStart && !needsRange ? (
+                <p className="mb-2 rounded-lg bg-olive/10 px-3 py-1.5 text-center font-[family-name:var(--font-lato)] text-sm font-medium text-olive-dark">
+                  {new Date(dateStart + "T12:00:00").toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "long", year: "numeric" })}
+                </p>
+              ) : null}
 
               {/* Month navigation */}
               <div className="mb-2 flex items-center justify-between">
@@ -243,6 +340,7 @@ export default function ArrangementPicker({
                 isRangeEnd={isRangeEnd}
                 onDateClick={handleDateClick}
                 onDateHover={() => {}}
+                showPrices={false}
               />
             </div>
 
@@ -286,9 +384,9 @@ export default function ArrangementPicker({
                     &euro;{totalPrice.toLocaleString("nl-NL", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                {selected.surcharges && (
+                {selected.surchargeKeys && (
                   <p className="mt-2 font-[family-name:var(--font-lato)] text-xs text-text-muted">
-                    {t("excludingSurcharges", { surcharges: selected.surcharges.join(", ") })}
+                    {t("excludingSurcharges", { surcharges: selected.surchargeKeys.map((k) => t(k as Parameters<typeof t>[0])).join(", ") })}
                   </p>
                 )}
               </div>
@@ -318,6 +416,10 @@ export default function ArrangementPicker({
 
 function ArrangementCard({
   arrangement,
+  name,
+  description,
+  features,
+  surcharges,
   isSelected,
   isExpanded,
   onSelect,
@@ -328,7 +430,11 @@ function ArrangementCard({
   showDetailsLabel,
   surchargesLabel,
 }: {
-  arrangement: ArrangementOption;
+  arrangement: ArrangementConfig;
+  name: string;
+  description: string;
+  features: string[];
+  surcharges: string[] | null;
   isSelected: boolean;
   isExpanded: boolean;
   onSelect: () => void;
@@ -339,8 +445,6 @@ function ArrangementCard({
   showDetailsLabel: string;
   surchargesLabel: string;
 }) {
-  const total = Math.round(arrangement.pricePerPerson * guests * 100) / 100;
-
   return (
     <div
       className={`rounded-xl border p-5 transition-all ${
@@ -373,11 +477,11 @@ function ArrangementCard({
                 {arrangement.icon === "clock" ? <ClockIcon /> : <CalendarIcon />}
               </span>
               <h3 className="font-[family-name:var(--font-playfair)] text-base text-olive-dark">
-                {arrangement.name}
+                {name}
               </h3>
             </div>
             <p className="mt-1 font-[family-name:var(--font-lato)] text-xs text-text-muted">
-              {arrangement.description}
+              {description}
             </p>
             <p className="mt-2 font-[family-name:var(--font-playfair)] text-lg text-olive-dark">
               &euro;{arrangement.pricePerPerson.toFixed(2).replace(".", ",")}
@@ -413,7 +517,7 @@ function ArrangementCard({
           <div className="pt-4 pl-8">
             <hr className="mb-3 border-cream-dark" />
             <ul className="space-y-1.5">
-              {arrangement.features.map((f) => (
+              {features.map((f) => (
                 <li
                   key={f}
                   className="font-[family-name:var(--font-lato)] text-sm text-text-muted"
@@ -423,12 +527,12 @@ function ArrangementCard({
                 </li>
               ))}
             </ul>
-            {arrangement.surcharges && (
+            {surcharges && (
               <div className="mt-3 rounded-lg bg-cream px-3 py-2">
                 <p className="font-[family-name:var(--font-lato)] text-xs font-medium text-olive-dark">
                   {surchargesLabel}
                 </p>
-                {arrangement.surcharges.map((s) => (
+                {surcharges.map((s) => (
                   <p key={s} className="font-[family-name:var(--font-lato)] text-xs text-text-muted">
                     {s}
                   </p>

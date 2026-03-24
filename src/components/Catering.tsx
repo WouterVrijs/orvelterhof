@@ -125,25 +125,6 @@ export default async function Catering() {
             <p className="mb-8 font-[family-name:var(--font-lato)] text-base leading-relaxed text-text-muted">
               {t("quoteText2")}
             </p>
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 overflow-hidden rounded-full border-2 border-terracotta/20">
-                <Image
-                  src="/images/Ruurd-Doorten-scaled.jpg"
-                  alt={t("ownerName")}
-                  width={112}
-                  height={112}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <div className="text-left">
-                <p className="font-[family-name:var(--font-playfair)] text-base text-olive-dark">
-                  {t("ownerName")}
-                </p>
-                <p className="font-[family-name:var(--font-lato)] text-xs font-bold uppercase tracking-wider text-text-muted">
-                  {t("ownerTitle")}
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* Right — 3 small cards */}
