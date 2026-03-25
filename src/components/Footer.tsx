@@ -137,6 +137,8 @@ export default async function Footer() {
                   [t("rates"), "/tarieven"],
                   [t("addressRoute"), "https://goo.gl/maps/TaTCMhAZmYT2"],
                   [t("terms"), "/algemene-voorwaarden"],
+                  [t("privacy"), "/privacybeleid"],
+                  [t("faq"), "/veelgestelde-vragen"],
                   [t("aboutUs"), "/over-ons"],
                   [t("contact"), "/contact"],
                 ].map(([label, href]) => {

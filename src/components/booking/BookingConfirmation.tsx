@@ -473,13 +473,13 @@ export default function BookingConfirmation({
                 />
                 <span className="font-[family-name:var(--font-lato)] text-sm text-text-muted">
                   {t("termsCheckbox")}{" "}
-                  <span className="font-medium text-olive-dark underline">
+                  <a href="/algemene-voorwaarden" className="font-medium text-olive-dark underline hover:text-terracotta">
                     {t("termsLabel")}
-                  </span>{" "}
+                  </a>{" "}
                   {t("andThe")}{" "}
-                  <span className="font-medium text-olive-dark underline">
+                  <a href="/privacybeleid" className="font-medium text-olive-dark underline hover:text-terracotta">
                     {t("privacyLabel")}
-                  </span>
+                  </a>
                   .
                 </span>
               </label>

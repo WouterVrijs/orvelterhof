@@ -32,6 +32,8 @@ function usePackages() {
       icon: "calendar" as const,
       features: [t("feat_zaalhuur1"), t("feat_koffie"), t("feat_cake"), t("feat_koekjes"), t("feat_flipover"), t("feat_beamer"), t("feat_wifi"), t("feat_lunch")],
       surcharges: null,
+      highlight: true,
+      highlightLabel: t("labelMostChosen"),
     },
     {
       name: t("pkg4Name"),
@@ -50,6 +52,8 @@ function usePackages() {
       icon: "clock" as const,
       features: [t("feat_24combo")],
       surcharges: [t("surcharge_single"), t("surcharge_tax")],
+      highlight: true,
+      highlightLabel: t("labelRecommended"),
     },
     {
       name: t("pkg6Name"),
@@ -71,6 +75,8 @@ type Package = {
   icon: "clock" | "calendar";
   features: string[];
   surcharges: string[] | null;
+  highlight?: boolean;
+  highlightLabel?: string;
 };
 
 function ClockIcon() {
@@ -103,12 +109,28 @@ function ArrowRight() {
 function PackageCard({ pkg }: { pkg: Package }) {
   const t = useTranslations("packages");
   const [open, setOpen] = useState(false);
+  const isHighlighted = pkg.highlight === true;
 
   return (
-    <div className="flex flex-col rounded-2xl border border-cream-dark bg-warm-white p-7 transition-shadow hover:shadow-lg">
+    <div
+      className={`relative flex flex-col rounded-2xl p-7 transition-shadow ${
+        isHighlighted
+          ? "border-2 border-olive/30 bg-white shadow-md ring-1 ring-olive/10"
+          : "border border-cream-dark bg-warm-white hover:shadow-lg"
+      }`}
+    >
+      {/* Highlight badge */}
+      {isHighlighted && pkg.highlightLabel && (
+        <div className="absolute -top-3 left-6">
+          <span className="rounded-full bg-olive px-4 py-1 font-[family-name:var(--font-lato)] text-[0.65rem] font-bold uppercase tracking-[0.15em] text-white shadow-sm">
+            {pkg.highlightLabel}
+          </span>
+        </div>
+      )}
+
       {/* Top row: icon + toggle */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cream">
+      <div className={`flex items-center justify-between ${isHighlighted ? "mb-6 mt-1" : "mb-6"}`}>
+        <div className={`flex h-11 w-11 items-center justify-center rounded-full ${isHighlighted ? "bg-olive/10" : "bg-cream"}`}>
           {pkg.icon === "clock" ? <ClockIcon /> : <CalendarIcon />}
         </div>
         <button
@@ -194,7 +216,11 @@ function PackageCard({ pkg }: { pkg: Package }) {
       {/* CTA — always at bottom */}
       <a
         href="#contact"
-        className="mt-8 flex items-center justify-between rounded-full border border-cream-dark px-6 py-3 font-[family-name:var(--font-lato)] text-sm font-medium text-olive-dark transition-colors hover:bg-cream"
+        className={`mt-8 flex items-center justify-between rounded-full px-6 py-3 font-[family-name:var(--font-lato)] text-sm font-medium transition-colors ${
+          isHighlighted
+            ? "bg-terracotta text-white shadow-sm hover:bg-terracotta-dark"
+            : "border border-cream-dark text-olive-dark hover:bg-cream"
+        }`}
       >
         {t("bookArrangement")}
         <ArrowRight />

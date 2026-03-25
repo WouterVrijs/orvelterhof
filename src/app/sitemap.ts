@@ -23,6 +23,8 @@ const routes = [
   "/plattegrond",
   "/zoek-en-boek",
   "/algemene-voorwaarden",
+  "/privacybeleid",
+  "/veelgestelde-vragen",
 ];
 
 const locales = ["nl", "de", "en"] as const;
