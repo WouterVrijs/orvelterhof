@@ -139,12 +139,12 @@ function PackageCard({ pkg }: { pkg: Package }) {
       {/* Price */}
       <div>
         {pkg.prefix ? (
-          <p className="font-[family-name:var(--font-playfair)] text-[2.25rem] text-olive-dark">
+          <p className="font-[family-name:var(--font-playfair)] text-xl text-olive-dark">
             {pkg.prefix}
             {pkg.price}
           </p>
         ) : (
-          <p className="font-[family-name:var(--font-playfair)] text-[2.25rem] text-olive-dark">
+          <p className="font-[family-name:var(--font-playfair)] text-xl text-olive-dark">
             &euro;{pkg.price}
           </p>
         )}
@@ -214,7 +214,7 @@ export default function BusinessPackages() {
           <p className="mb-3 font-[family-name:var(--font-lato)] text-sm font-bold uppercase tracking-[0.2em] text-terracotta">
             {t("tagline")}
           </p>
-          <h2 className="mb-4 font-[family-name:var(--font-playfair)] text-[2.25rem] text-olive-dark md:text-[3.813rem]">
+          <h2 className="mb-4 font-[family-name:var(--font-playfair)] text-xl text-olive-dark md:text-[3.813rem]">
             {t("title")}
           </h2>
           <p className="mx-auto max-w-2xl font-[family-name:var(--font-lato)] text-[1rem] leading-relaxed text-text-muted">

@@ -8,6 +8,6 @@ export const config = {
     // Match all pathnames except those starting with:
     // - api, _next, _vercel, monitoring
     // - files with extensions (e.g. favicon.ico)
-    "/((?!api|_next|_vercel|monitoring|.*\\..*).*)",
+    "/((?!api|studio|_next|_vercel|monitoring|.*\\..*).*)",
   ],
 };
